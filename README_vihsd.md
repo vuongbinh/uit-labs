@@ -46,11 +46,14 @@ Macro F1 is evaluated after every epoch and written to
 Optional knobs: `--epochs`, `--batch-size`, `--grad-accum-steps` (effective
 batch = `batch_size * grad_accum_steps`), `--learning-rate`, `--max-length`,
 `--warmup-ratio`, `--sample-size` (smoke runs), `--optim` (any `transformers`
-optimizer name), and `--gradient-checkpointing`.
+optimizer name), `--gradient-checkpointing`, and `--freeze-embeddings`.
 
-On a memory-constrained GPU, `xlm-roberta-base` (large multilingual embedding
-table) needs `--optim adamw_bnb_8bit --gradient-checkpointing` (install the
-extra with `uv sync --extra bnb`); `uitnlp/visobert` fits with defaults.
+`uitnlp/visobert` fine-tunes fully with the defaults on a 4 GB GPU. For
+`xlm-roberta-base` (its ~192M-parameter multilingual embedding table does not
+fit alongside full-precision AdamW state) add `--freeze-embeddings`, which
+keeps that table fixed and trains the encoder at ViSoBERT-comparable speed;
+`--optim adamw_bnb_8bit --gradient-checkpointing` (extra: `uv sync --extra bnb`)
+is the slower alternative that keeps every parameter trainable.
 
 ## Outputs
 
