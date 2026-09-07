@@ -81,6 +81,7 @@ are the system of record for anything not committed to git (see §8.3 for why th
 | `src/vihate/` | The pipeline package (7 modules, ~530 lines) |
 | `tests/` | Pytest suite (2 files on `nlp/train`; 6 files on the QA branch) |
 | `README_vihsd.md` | Pipeline usage guide |
+| `notebooks/vihate_project_run.ipynb` | **The project run as one executable notebook** (HYPE-8) — every CLI stage as a cell, calling the same `vihate` functions and writing byte-identical artifacts. Excluded from `ruff`, like `cyber_bullying/` |
 | `pyproject.toml` + `uv.lock` | Dependencies & tooling config, locked for reproducibility |
 | `data/*.csv`, `cyber_bullying/` | Pre-existing, **unrelated** lab content (local ViHSD subset + notebook). Not used by the `vihate` CLI; excluded from linting. Do not modify |
 | `docs/research/vihsd_literature_review_and_baselines.md` | HYPE-1 research report — **not yet on `nlp/train`**; exists only on the local (unpushed) branch `agent/researcher-sofia/ace161d64951` and as a HYPE-1 comment attachment |
@@ -190,6 +191,12 @@ uv run vihate run --experiment transformer --model-name xlm-roberta-base  --out-
 | `--classical-model` | `logreg` | `logreg` or `svm` (SVM yields no AUC metrics — no probabilities) |
 | `--model-name` | `vinai/phobert-base` | Transformer backbone. Research recommends **`uitnlp/visobert` first**; the default predates that decision |
 | `--epochs` / `--batch-size` / `--learning-rate` / `--max-length` | `3` / `16` / `2e-5` / `160` | Training configuration agreed in HYPE-1 |
+
+Every flag above is a variable in the configuration cell of
+`notebooks/vihate_project_run.ipynb`, which runs the same pipeline as a
+notebook (HYPE-8) and writes byte-identical artifacts to `outputs/notebook/`.
+Its last stage re-checks the result against the §4.2 baseline, so a drift in
+the run shows up as a `DRIFT` verdict rather than silently.
 
 ---
 

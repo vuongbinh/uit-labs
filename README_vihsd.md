@@ -18,6 +18,32 @@ uv sync --extra dev
 The current runtime used to build this scaffold did not have `uv` or ML
 packages installed, so dependency installation is expected before full runs.
 
+## Notebook Run
+
+The whole project run is also available as one executable notebook,
+`notebooks/vihate_project_run.ipynb`: dataset load, fold-plan audit, classical
+CV, transformer CV, metrics, confusion matrices, and the summary artifacts —
+one stage per cell, with the configuration in a single cell at the top.
+
+```bash
+uv sync --extra dev --extra notebook
+uv run jupyter lab notebooks/vihate_project_run.ipynb
+```
+
+The notebook calls the same `vihate` functions the CLI calls — no pipeline
+logic is duplicated — and writes the same artifacts to `outputs/notebook/`, so
+a notebook run and a CLI run are byte-identical. Stage 3 (transformer) is off
+by default behind `RUN_TRANSFORMER`, since it needs a GPU. Headless execution:
+
+```bash
+uv run jupyter nbconvert --to notebook --execute --inplace \
+    notebooks/vihate_project_run.ipynb
+```
+
+The notebook's last stage compares its Macro F1 against the accepted classical
+baseline (`docs/project_overview_and_handover.md` §4.2) and reports whether the
+run reproduced it.
+
 ## Classical 5-Fold CV
 
 ```bash
@@ -70,6 +96,9 @@ Reported metrics include macro F1, weighted F1, balanced accuracy, MCC,
 per-class precision/recall/F1, confusion matrix, and ROC-AUC/PR-AUC when
 class probabilities are available.
 
+A notebook run writes the same set under `outputs/notebook/<run>/`; the files
+are byte-identical to the CLI's for the same configuration.
+
 ## Local Checks
 
 ```bash
@@ -83,3 +112,7 @@ Without `uv`, the stdlib-only syntax check still works:
 ```bash
 python3 -m compileall src tests
 ```
+
+`ruff` lints `.ipynb` cells, so `notebooks/` is excluded alongside
+`cyber_bullying/`: library-oriented rules such as `T201` (`print`) contradict
+notebook idiom, where printing progress and displaying tables is the output.

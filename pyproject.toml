@@ -26,6 +26,20 @@ dev = [
 bnb = [
   "bitsandbytes>=0.43; platform_system == 'Linux'",
 ]
+# Optional: run the pipeline as a notebook instead of through the CLI
+# (`notebooks/vihate_project_run.ipynb`). `nbconvert` drives headless
+# execution; `pandas`/`matplotlib` only render tables and confusion-matrix
+# heatmaps, so the metrics themselves stay identical to the CLI's.
+notebook = [
+  "ipykernel>=6.29",
+  # Silences tqdm's "IProgress not found" warning and renders training progress
+  # bars during transformer folds.
+  "ipywidgets>=8.1",
+  "jupyterlab>=4.2",
+  "matplotlib>=3.9",
+  "nbconvert>=7.16",
+  "pandas>=2.2",
+]
 
 [project.scripts]
 vihate = "vihate.cli:app"
@@ -43,7 +57,10 @@ target-version = "py312"
 # This pyproject.toml also covers unrelated pre-existing lab/homework content
 # (cyber_bullying/, data/) at the repo root; scope linting to the vihate
 # package itself, matching basedpyright's `include` below.
-extend-exclude = ["cyber_bullying", "data"]
+# `notebooks/` is excluded for the same reason `cyber_bullying/` is: ruff lints
+# .ipynb cells, and library-oriented rules (T201 `print`, ANN, D) contradict
+# notebook idiom, where printing progress and displaying tables *is* the output.
+extend-exclude = ["cyber_bullying", "data", "notebooks"]
 
 [tool.ruff.lint]
 select = ["ALL"]
