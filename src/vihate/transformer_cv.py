@@ -30,7 +30,7 @@ class TransformerConfig:
     max_length: int = 160
     warmup_ratio: float = 0.1
     # Any `transformers` optimizer name. `adamw_torch` is full-precision AdamW;
-    # `adamw_8bit` (needs `bitsandbytes`) keeps AdamW math but quantizes the
+    # `adamw_bnb_8bit` (needs `bitsandbytes`) keeps AdamW math but quantizes the
     # optimizer state, which is what lets XLM-R-base fine-tune inside a 4 GB GPU.
     optim: str = "adamw_torch"
     # Recompute activations in the backward pass instead of storing them: ~25%
