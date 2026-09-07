@@ -2,10 +2,13 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from vihate.data import TextExample
 from vihate.metrics import FoldResult, evaluate_fold
+
+if TYPE_CHECKING:
+    from sklearn.base import ClassifierMixin
 
 ClassicalModel = Literal["logreg", "svm"]
 
@@ -19,7 +22,11 @@ class ClassicalConfig:
     seed: int = 13
 
 
-def run_classical_cv(examples: list[TextExample], config: ClassicalConfig, out_dir: Path) -> list[FoldResult]:
+def run_classical_cv(
+    examples: list[TextExample],
+    config: ClassicalConfig,
+    out_dir: Path,
+) -> list[FoldResult]:
     """Run stratified cross-validation for TF-IDF word and char n-grams."""
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.model_selection import StratifiedKFold
@@ -38,8 +45,14 @@ def run_classical_cv(examples: list[TextExample], config: ClassicalConfig, out_d
                     "features",
                     FeatureUnion(
                         [
-                            ("word", TfidfVectorizer(analyzer="word", ngram_range=(1, 2), min_df=2)),
-                            ("char", TfidfVectorizer(analyzer="char", ngram_range=(3, 5), min_df=2)),
+                            (
+                                "word",
+                                TfidfVectorizer(analyzer="word", ngram_range=(1, 2), min_df=2),
+                            ),
+                            (
+                                "char",
+                                TfidfVectorizer(analyzer="char", ngram_range=(3, 5), min_df=2),
+                            ),
                         ],
                     ),
                 ),
@@ -53,13 +66,14 @@ def run_classical_cv(examples: list[TextExample], config: ClassicalConfig, out_d
 
         pipeline.fit(train_texts, train_labels)
         predictions = pipeline.predict(test_texts)
-        probabilities = pipeline.predict_proba(test_texts) if hasattr(pipeline, "predict_proba") else None
+        has_predict_proba = hasattr(pipeline, "predict_proba")
+        probabilities = pipeline.predict_proba(test_texts) if has_predict_proba else None
         fold_results.append(evaluate_fold(fold, test_labels, predictions, probabilities, out_dir))
 
     return fold_results
 
 
-def _build_classifier(model: ClassicalModel, seed: int):
+def _build_classifier(model: ClassicalModel, seed: int) -> "ClassifierMixin":
     match model:
         case "logreg":
             from sklearn.linear_model import LogisticRegression

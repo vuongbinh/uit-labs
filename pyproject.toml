@@ -9,8 +9,9 @@ dependencies = [
   "numpy>=2.0",
   "rich>=13.7",
   "scikit-learn>=1.5",
+  "sentencepiece>=0.2",
   "torch>=2.4",
-  "transformers>=4.44",
+  "transformers>=4.44,<5",
   "typer>=0.12",
 ]
 
@@ -34,6 +35,10 @@ packages = ["src/vihate"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# This pyproject.toml also covers unrelated pre-existing lab/homework content
+# (cyber_bullying/, data/) at the repo root; scope linting to the vihate
+# package itself, matching basedpyright's `include` below.
+extend-exclude = ["cyber_bullying", "data"]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -41,15 +46,28 @@ ignore = [
   "COM812",
   "D203",
   "D213",
+  # No copyright-header convention in this repo.
+  "CPY001",
+  # Heavy ML deps (torch, transformers, sklearn, datasets) are imported lazily
+  # inside functions so `vihate --help` and syntax checks stay fast and work
+  # even before `uv sync` installs them; see README_vihsd.md.
+  "PLC0415",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["D", "PLR2004", "S101"]
+"tests/**/*.py" = ["D", "INP001", "PLR2004", "S101"]
+# Typer commands legitimately expose one option per CLI flag.
+"src/vihate/cli.py" = ["PLR0913", "PLR0917"]
+# `compute_loss` overrides `transformers.Trainer`'s third-party signature.
+"src/vihate/transformer_cv.py" = ["ARG002", "FBT001", "FBT002"]
 
 [tool.basedpyright]
 include = ["src", "tests"]
 pythonVersion = "3.12"
-typeCheckingMode = "all"
+# "all" is impractical here: sklearn, datasets, and transformers ship without
+# type stubs, so exhaustive strictness mostly flags third-party `Unknown`
+# types rather than real bugs in this package's code.
+typeCheckingMode = "standard"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

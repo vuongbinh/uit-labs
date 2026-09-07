@@ -13,13 +13,16 @@ class HateLabel(IntEnum):
 
 
 LABEL_NAMES: Final[tuple[str, str, str]] = ("CLEAN", "OFFENSIVE", "HATE")
-_LABEL_BY_NAME: Final[dict[str, HateLabel]] = {name: HateLabel(idx) for idx, name in enumerate(LABEL_NAMES)}
+_LABEL_BY_NAME: Final[dict[str, HateLabel]] = {
+    name: HateLabel(idx) for idx, name in enumerate(LABEL_NAMES)
+}
 
 
 class UnknownLabelError(Exception):
     """Raised when a dataset label cannot be mapped to the canonical label set."""
 
     def __init__(self, raw_label: str) -> None:
+        """Record the raw label value that could not be mapped."""
         super().__init__(f"unknown ViHSD label: {raw_label}")
         self.raw_label = raw_label
 

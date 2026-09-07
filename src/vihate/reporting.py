@@ -1,17 +1,22 @@
 """Report persistence for CV experiments."""
 
-from collections.abc import Mapping, Sequence
 import json
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from statistics import fmean, pstdev
 
 ScalarMap = Mapping[str, float]
 
+type JsonPayload = (
+    Mapping[str, "JsonPayload | float | int | str"] | Sequence["JsonPayload | float | int | str"]
+)
 
-def write_json(path: Path, payload: Mapping[str, ScalarMap] | Sequence[Mapping[str, ScalarMap]]) -> None:
+
+def write_json(path: Path, payload: JsonPayload) -> None:
     """Write a JSON payload with deterministic formatting."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+    text = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
+    path.write_text(text, encoding="utf-8")
 
 
 def summarize_folds(folds: Sequence[ScalarMap]) -> dict[str, dict[str, float]]:

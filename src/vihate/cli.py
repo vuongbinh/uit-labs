@@ -13,6 +13,11 @@ from vihate.transformer_cv import TransformerConfig, run_transformer_cv
 app = typer.Typer(no_args_is_help=True)
 
 
+@app.callback()
+def _callback() -> None:
+    """Vietnamese hate-speech (ViHSD) training and cross-validation pipeline."""
+
+
 @app.command()
 def run(
     experiment: Annotated[Literal["classical", "transformer"], typer.Option()] = "classical",
@@ -53,7 +58,8 @@ def run(
             )
     fold_scalars = [result.scalars for result in fold_results]
     summary = summarize_folds(fold_scalars)
-    write_json(out_dir / "fold_metrics.json", [{"fold": result.fold, "metrics": result.scalars} for result in fold_results])
+    fold_metrics = [{"fold": result.fold, "metrics": result.scalars} for result in fold_results]
+    write_json(out_dir / "fold_metrics.json", fold_metrics)
     write_json(out_dir / "summary.json", summary)
     write_markdown_summary(out_dir / "summary.md", summary)
 
