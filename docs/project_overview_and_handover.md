@@ -40,7 +40,7 @@ What has been delivered so far:
 
 What remains: **HYPE-5** (transformer fine-tuning & benchmarking vs. the classical baseline)
 and **HYPE-6** (qualitative error analysis & synthesis report), both in backlog, plus the
-merge/push loose ends listed in §8.3.
+merge/push loose ends listed in §7.2.
 
 ---
 
