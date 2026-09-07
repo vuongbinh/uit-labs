@@ -7,7 +7,7 @@ import typer
 
 from vihate.classical import ClassicalConfig, run_classical_cv
 from vihate.data import load_vihsd_examples
-from vihate.reporting import summarize_folds, write_json, write_markdown_summary
+from vihate.reporting import persist_fold_results
 from vihate.transformer_cv import TransformerConfig, run_transformer_cv
 
 app = typer.Typer(no_args_is_help=True)
@@ -66,12 +66,7 @@ def run(
                 ),
                 out_dir,
             )
-    fold_scalars = [result.scalars for result in fold_results]
-    summary = summarize_folds(fold_scalars)
-    fold_metrics = [{"fold": result.fold, "metrics": result.scalars} for result in fold_results]
-    write_json(out_dir / "fold_metrics.json", fold_metrics)
-    write_json(out_dir / "summary.json", summary)
-    write_markdown_summary(out_dir / "summary.md", summary)
+    persist_fold_results(out_dir, fold_results)
 
 
 if __name__ == "__main__":
