@@ -1,3 +1,5 @@
+import pytest
+
 from vihate.labels import UnknownLabelError, label_name, normalize_label
 
 
@@ -17,12 +19,9 @@ def test_normalize_label_when_unknown_label() -> None:
     raw_label = "spam"
 
     # When / Then
-    try:
+    with pytest.raises(UnknownLabelError) as exc_info:
         normalize_label(raw_label)
-    except UnknownLabelError as exc:
-        assert exc.raw_label == raw_label
-    else:
-        raise AssertionError("expected UnknownLabelError")
+    assert exc_info.value.raw_label == raw_label
 
 
 def test_label_name_when_integer_id() -> None:

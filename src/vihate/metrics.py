@@ -3,9 +3,13 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 from vihate.labels import LABEL_NAMES
 from vihate.reporting import write_json
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 
 @dataclass(frozen=True, slots=True)
@@ -38,17 +42,28 @@ def evaluate_fold(
     from sklearn.preprocessing import label_binarize
 
     labels = list(range(len(LABEL_NAMES)))
-    precision, recall, f1, _support = precision_recall_fscore_support(
-        y_true,
-        y_pred,
-        labels=labels,
-        zero_division=0,
+    # `zero_division` also accepts 0/1 at runtime; the bundled stub only types
+    # it as `str`. The stub also always reports scalar floats even though
+    # `average=None` returns one array per class at runtime.
+    precision, recall, f1, _support = cast(
+        "tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]",
+        precision_recall_fscore_support(
+            y_true,
+            y_pred,
+            labels=labels,
+            average=None,
+            zero_division=0,  # pyright: ignore[reportArgumentType]
+        ),
     )
     scalars = {
         "balanced_accuracy": float(balanced_accuracy_score(y_true, y_pred)),
-        "macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
+        "macro_f1": float(
+            f1_score(y_true, y_pred, average="macro", zero_division=0),  # pyright: ignore[reportArgumentType]
+        ),
         "mcc": float(matthews_corrcoef(y_true, y_pred)),
-        "weighted_f1": float(f1_score(y_true, y_pred, average="weighted", zero_division=0)),
+        "weighted_f1": float(
+            f1_score(y_true, y_pred, average="weighted", zero_division=0),  # pyright: ignore[reportArgumentType]
+        ),
     }
     for idx, label_name in enumerate(LABEL_NAMES):
         scalars[f"{label_name.lower()}_precision"] = float(precision[idx])
@@ -61,7 +76,8 @@ def evaluate_fold(
         scalars["roc_auc_ovr_weighted"] = float(
             roc_auc_score(truth, probabilities, average="weighted", multi_class="ovr"),
         )
-        scalars["pr_auc_macro"] = float(average_precision_score(truth, probabilities, average="macro"))
+        pr_auc = average_precision_score(truth, probabilities, average="macro")
+        scalars["pr_auc_macro"] = float(pr_auc)
 
     matrix = confusion_matrix(y_true, y_pred, labels=labels).astype(int).tolist()
     write_json(out_dir / f"confusion_matrix_fold_{fold}.json", {"matrix": matrix})
