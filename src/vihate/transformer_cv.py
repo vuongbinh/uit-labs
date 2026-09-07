@@ -37,6 +37,11 @@ class TransformerConfig:
     # slower per step but roughly halves activation memory, which lets larger
     # backbones use a usable batch size on a small GPU.
     gradient_checkpointing: bool = False
+    # Freeze the input word-embedding table. For a big multilingual vocab
+    # (xlm-roberta-base: ~192M of 278M params sit in embeddings) this drops
+    # trainable params and optimizer memory to encoder-only scale, trading a
+    # small amount of accuracy for a several-fold speed-up on a small GPU.
+    freeze_embeddings: bool = False
 
 
 def run_transformer_cv(
@@ -88,6 +93,9 @@ def run_transformer_cv(
         train_dataset = _tokenized_dataset(train_raw, tokenizer, config)
         test_dataset = _tokenized_dataset(test_raw, tokenizer, config)
         model = AutoModelForSequenceClassification.from_pretrained(config.model_name, num_labels=3)
+        if config.freeze_embeddings:
+            for parameter in model.get_input_embeddings().parameters():
+                parameter.requires_grad = False
         args = TrainingArguments(
             output_dir=str(out_dir / f"fold_{fold}"),
             eval_strategy="epoch",

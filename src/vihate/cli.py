@@ -36,6 +36,7 @@ def run(
     warmup_ratio: Annotated[float, typer.Option()] = 0.1,
     optim: Annotated[str, typer.Option()] = "adamw_torch",
     gradient_checkpointing: Annotated[bool, typer.Option()] = False,
+    freeze_embeddings: Annotated[bool, typer.Option()] = False,
 ) -> None:
     """Run a ViHSD cross-validation experiment."""
     examples = load_vihsd_examples(split=split, sample_size=sample_size)
@@ -61,6 +62,7 @@ def run(
                     warmup_ratio=warmup_ratio,
                     optim=optim,
                     gradient_checkpointing=gradient_checkpointing,
+                    freeze_embeddings=freeze_embeddings,
                 ),
                 out_dir,
             )
