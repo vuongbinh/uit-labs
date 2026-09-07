@@ -21,6 +21,11 @@ dev = [
   "pytest>=8.3",
   "ruff>=0.6",
 ]
+# Optional: 8-bit AdamW (`--optim adamw_bnb_8bit`) for fine-tuning larger
+# backbones (e.g. xlm-roberta-base) on memory-constrained GPUs.
+bnb = [
+  "bitsandbytes>=0.43; platform_system == 'Linux'",
+]
 
 [project.scripts]
 vihate = "vihate.cli:app"
@@ -56,10 +61,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["D", "INP001", "PLR2004", "S101"]
-# Typer commands legitimately expose one option per CLI flag.
-"src/vihate/cli.py" = ["PLR0913", "PLR0917"]
-# `compute_loss` overrides `transformers.Trainer`'s third-party signature.
-"src/vihate/transformer_cv.py" = ["ARG002", "FBT001", "FBT002"]
+# Typer commands legitimately expose one option per CLI flag, including
+# boolean `--flag/--no-flag` options.
+"src/vihate/cli.py" = ["FBT001", "FBT002", "PLR0913", "PLR0917"]
 
 [tool.basedpyright]
 include = ["src", "tests"]

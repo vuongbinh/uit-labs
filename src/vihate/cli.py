@@ -30,8 +30,12 @@ def run(
     model_name: Annotated[str, typer.Option()] = "vinai/phobert-base",
     epochs: Annotated[float, typer.Option()] = 3.0,
     batch_size: Annotated[int, typer.Option()] = 16,
+    grad_accum_steps: Annotated[int, typer.Option()] = 1,
     learning_rate: Annotated[float, typer.Option()] = 2e-5,
     max_length: Annotated[int, typer.Option()] = 160,
+    warmup_ratio: Annotated[float, typer.Option()] = 0.1,
+    optim: Annotated[str, typer.Option()] = "adamw_torch",
+    gradient_checkpointing: Annotated[bool, typer.Option()] = False,
 ) -> None:
     """Run a ViHSD cross-validation experiment."""
     examples = load_vihsd_examples(split=split, sample_size=sample_size)
@@ -51,8 +55,12 @@ def run(
                     seed=seed,
                     epochs=epochs,
                     batch_size=batch_size,
+                    grad_accum_steps=grad_accum_steps,
                     learning_rate=learning_rate,
                     max_length=max_length,
+                    warmup_ratio=warmup_ratio,
+                    optim=optim,
+                    gradient_checkpointing=gradient_checkpointing,
                 ),
                 out_dir,
             )

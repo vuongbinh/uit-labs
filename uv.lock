@@ -194,6 +194,20 @@ wheels = [
 ]
 
 [[package]]
+name = "bitsandbytes"
+version = "0.50.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "packaging", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "torch", marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/d5/b2cb5b5a9daf7349a02b1af2c49b6a044fda2702c9cc5dc296f648358327/bitsandbytes-0.50.2-py3-none-manylinux_2_24_aarch64.whl", hash = "sha256:d5772560dd94c4d9c57f50c9b017450a1707f7687bfd4b3dc86f7342aafe721e", size = 23777467, upload-time = "2026-08-27T00:10:50.92Z" },
+    { url = "https://files.pythonhosted.org/packages/a5/6e/e4e8b75716dbe5e50964f070266e06f4e6806ce051bfb97f52ee162b9310/bitsandbytes-0.50.2-py3-none-manylinux_2_24_x86_64.whl", hash = "sha256:55348a9a4a21bfd99cf8c7b32fe67b4030ae5c2a05738e03c1747f65fa6ec283", size = 43139553, upload-time = "2026-08-27T00:10:54.751Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.7.22"
 source = { registry = "https://pypi.org/simple" }
@@ -2021,6 +2035,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+bnb = [
+    { name = "bitsandbytes", marker = "sys_platform == 'linux'" },
+]
 dev = [
     { name = "basedpyright" },
     { name = "pytest" },
@@ -2031,6 +2048,7 @@ dev = [
 requires-dist = [
     { name = "accelerate", specifier = ">=1.0" },
     { name = "basedpyright", marker = "extra == 'dev'", specifier = ">=1.20" },
+    { name = "bitsandbytes", marker = "sys_platform == 'linux' and extra == 'bnb'", specifier = ">=0.43" },
     { name = "datasets", specifier = ">=3.0" },
     { name = "numpy", specifier = ">=2.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
@@ -2042,7 +2060,7 @@ requires-dist = [
     { name = "transformers", specifier = ">=4.44,<5" },
     { name = "typer", specifier = ">=0.12" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["dev", "bnb"]
 
 [[package]]
 name = "xxhash"

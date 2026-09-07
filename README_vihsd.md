@@ -32,14 +32,25 @@ because `LinearSVC` does not expose probabilities.
 ## Transformer 5-Fold CV
 
 ```bash
-uv run vihate run --experiment transformer --model-name vinai/phobert-base --out-dir outputs/phobert
+uv run vihate run --experiment transformer --model-name uitnlp/visobert --out-dir outputs/visobert
 uv run vihate run --experiment transformer --model-name xlm-roberta-base --out-dir outputs/xlm-roberta
 ```
 
-Transformer folds use stratified 5-fold CV, fixed seed, weighted loss from
-training-fold class frequencies, and Hugging Face `Trainer`. Optional knobs:
-`--epochs`, `--batch-size`, `--learning-rate`, `--max-length`, and
-`--sample-size` for smoke runs.
+Transformer folds use stratified 5-fold CV, fixed seed, AdamW (`adamw_torch`)
+with a linear warmup schedule (`--warmup-ratio`, default 0.1), weighted
+cross-entropy loss from training-fold class frequencies, dynamic per-batch
+padding, `fp16` when CUDA is available, and Hugging Face `Trainer`. Validation
+Macro F1 is evaluated after every epoch and written to
+`training_history_fold_<n>.json` (and an aggregated `training_history.json`).
+
+Optional knobs: `--epochs`, `--batch-size`, `--grad-accum-steps` (effective
+batch = `batch_size * grad_accum_steps`), `--learning-rate`, `--max-length`,
+`--warmup-ratio`, `--sample-size` (smoke runs), `--optim` (any `transformers`
+optimizer name), and `--gradient-checkpointing`.
+
+On a memory-constrained GPU, `xlm-roberta-base` (large multilingual embedding
+table) needs `--optim adamw_bnb_8bit --gradient-checkpointing` (install the
+extra with `uv sync --extra bnb`); `uitnlp/visobert` fits with defaults.
 
 ## Outputs
 
@@ -49,6 +60,8 @@ Each run writes:
 - `summary.json`: mean and standard deviation for scalar metrics.
 - `summary.md`: human-readable report.
 - `confusion_matrix_fold_<n>.json`: per-fold confusion matrices.
+- `training_history_fold_<n>.json` / `training_history.json`: per-epoch
+  training loss and validation Macro F1 (transformer runs only).
 
 Reported metrics include macro F1, weighted F1, balanced accuracy, MCC,
 per-class precision/recall/F1, confusion matrix, and ROC-AUC/PR-AUC when
