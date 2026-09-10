@@ -16,7 +16,7 @@ cd "$REPO_ROOT"
 
 DATA_DIR="${1:-data}"
 PYTHON="${PYTHON:-.venv/bin/python}"
-PHOBERT_ROWS="${PHOBERT_ROWS:-6000}"
+PHOBERT_ROWS="${PHOBERT_ROWS:-8000}"
 TRAIN_SHARD="$DATA_DIR/shard_0000.parquet"
 TEST_SHARD="$DATA_DIR/shard_0009.parquet"
 
@@ -29,13 +29,21 @@ mkdir -p "$DATA_DIR" reports/text_features
   --tfidf-mode word --tfidf-components 128 \
   --out-dir reports/text_features/main
 
-# TF-IDF analyzer comparison, at a smaller scale so all three finish promptly.
-for MODE in char both; do
+# TF-IDF analyzer comparison. All three modes run at the *same* sample size and
+# seed so they share an identical tabular baseline and are directly comparable.
+for MODE in word char both; do
+  # `word` at this scale is the matched comparison arm; the headline run above
+  # already covers word at full scale.
+  if [ "$MODE" = word ]; then
+    SUFFIX="word_matched"
+  else
+    SUFFIX="$MODE"
+  fi
   "$PYTHON" -m real_estate.text.benchmark \
     --train-shard "$TRAIN_SHARD" --test-shard "$TEST_SHARD" --cache-dir "$DATA_DIR" \
     --n-train 60000 --n-test 25000 --n-seeds 1 \
     --tfidf-mode "$MODE" --tfidf-components 128 \
-    --out-dir "reports/text_features/tfidf_$MODE"
+    --out-dir "reports/text_features/tfidf_$SUFFIX"
 done
 
 # Optional PhoBERT arm. Skipped unless torch/transformers are installed.
