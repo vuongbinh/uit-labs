@@ -140,25 +140,43 @@ Other protocol choices in `benchmark.py`:
 
 ## 5. Dataset findings that affect any baseline
 
-Verified on the published shards; each one changes how the target should be modelled.
+Verified on the published shards. Items 1 and 2 are already documented in
+`reports/vietnam_real_estates_eda.md`; they are restated here because this module
+has to handle them, and item 2 records where an earlier reading of the data was
+**wrong**. Items 3–5 are new.
 
 1. **`price` is a string column.** The dataset card declares `float64`; the
-   parquet schema says `string`. 97.1% of values are plain integer VND strings
-   and 2.9% are null. `log1p(price)` on the raw column will not do what you
-   expect. `parse_price` converts it **strictly** — anything that is not a plain
-   number becomes `NaN` rather than being silently coerced, because stripping
-   currency words would turn `"7.45 tỷ"` into `7.45` **VND**, a billion-fold error.
+   parquet schema says `string` (97.1% plain integer VND strings, 2.9% null).
+   Already noted in the EDA's schema table. `parse_price` converts it
+   **strictly** — anything that is not a plain number becomes `NaN` rather than
+   being coerced, because stripping currency words would turn `"7.45 tỷ"` into
+   `7.45` **VND**, a billion-fold error.
 
-2. **Rentals are mixed in with sales.** ~17–19% of rows are `cho thuê`, whose
-   monthly asking price is orders of magnitude below a sale price. Leaving them
-   in corrupts the log-price target. `kw_cho_thue` is the flag, and `clean_frame`
-   drops those rows. Removing them plus the price/area bounds costs ~22% of rows.
+2. **`cho thuê` in the text does not mean the listing is a rental.** This one was
+   read wrong initially, and the error is worth recording. `kw_cho_thue` fires on
+   18.76% of rows, which initially read as "18.76% of the corpus is rentals" and
+   was used as a row filter. Measured against price, that is false: **96.1% of
+   the flagged rows carry a sale-scale price** (median 10 tỷ VND, versus 6.8 tỷ
+   for unflagged rows). They are sale listings *pitching rental yield* — "sẵn hợp
+   đồng thuê" (sold with an existing lease), "tiện cho thuê". Genuine rental
+   listings do exist but quote a monthly rate (15–60M VND) and are rare.
 
-3. **Price outliers span 15 orders of magnitude.** The minimum recorded price on
-   `shard_0000` is 300,000 VND and the maximum exceeds 800 *trillion* VND.
-   `clean_frame` bounds the target; RMSLE is the primary metric because it
-   damps this tail. Raw-scale R² is correspondingly unstable and should not be
-   read as the headline number.
+   Consequences: the flag is a legitimate **feature** (a property marketed on
+   yield differs from one that isn't) but an invalid **filter**. Dropping on it
+   discards ~19% of valid training rows, and non-randomly — the dropped segment
+   is systematically higher-priced, which biases both the model and any uplift
+   measured against it. `clean_frame`'s `min_price` floor is what excludes real
+   rentals, and `kw_cho_thue` is no longer used for cleaning.
+
+3. **Cleaning now follows the EDA's Rule 1.** `clean_frame` defaults to price
+   ∈ [100M, 200B] VND, area ∈ [15, 3000] m², unit price ∈ [3M, 800M] VND/m², so
+   this module and the baseline notebook model the same population. Measured
+   retention is 92.9% (`shard_0000`) and 90.2% (`shard_0009`) against the EDA's
+   89.57% corpus-wide, and log-price skew comes out at +0.179 / +0.273 versus
+   their +0.186 — close enough to confirm the rule is implemented faithfully.
+   The unit-price band is the part that matters most: it catches price/area
+   mismatches neither bound catches alone. Raw prices otherwise span 300,000 VND
+   to over 800 *trillion*, which is also why raw-scale R² is unstable (§6.1).
 
 4. **~0.7% of text rows are NFD-decomposed.** Stray combining marks
    (`U+0301`, `U+0300`, `U+0323`, `U+0309`) and emoji variation selectors
@@ -181,94 +199,99 @@ Every number below is **out-of-time**: training rows come from `shard_0000`
 (2026-03-01 → 2026-03-30). Primary metric is RMSLE (lower is better). Raw JSON
 and markdown reports are committed under `reports/text_features/`.
 
-### 6.1 Marginal uplift ladder — 77,904 train / 29,794 test rows, 2 seeds
+### 6.1 Marginal uplift ladder — 92,855 train / 36,118 test rows, 2 seeds
 
 Each arm is a strict superset of the one above it, so every row is a marginal gain.
 
 | arm | features | RMSLE | seed std | MAPE % | MAE (tỷ) | MedAE (tỷ) | R² |
 |---|---|---|---|---|---|---|---|
-| tabular | 23 | 0.4511 | 0.0003 | 31.47 | 7.317 | 1.416 | 0.0453 |
-| + keywords | 70 | 0.4345 | 0.0007 | 30.10 | 7.108 | 1.353 | 0.0488 |
-| + entities | 85 | 0.4287 | 0.0008 | 29.66 | 6.969 | 1.331 | 0.0508 |
-| + tfidf | 213 | **0.4119** | 0.0007 | **28.73** | 7.013 | 1.344 | 0.0456 |
+| tabular | 23 | 0.3973 | 0.0003 | 28.59 | 3.998 | 1.428 | 0.7470 |
+| + keywords | 70 | 0.3765 | 0.0002 | 27.01 | 3.801 | 1.366 | 0.7635 |
+| + entities | 85 | 0.3678 | 0.0002 | 26.33 | 3.723 | 1.341 | 0.7665 |
+| + tfidf | 213 | **0.3573** | 0.0006 | **25.92** | **3.679** | **1.330** | **0.7754** |
 
-**Cumulative gain over tabular-only: −0.0392 RMSLE (−8.69%) and −2.74 MAPE points.**
+**Cumulative gain over tabular-only: −0.0400 RMSLE (−10.07%), −2.67 MAPE points,
++0.0284 R².** Every arm improves every metric — there is no trade-off to argue
+about, which is worth noting because an earlier, mis-cleaned version of this
+benchmark did show one (see the note below).
 
-Seed spread is at most 0.0008 RMSLE on every arm, so each step is 20–50× the
+Seed spread is at most 0.0006 RMSLE per arm, so each step is 30–100× the
 seed-to-seed noise; the ordering is not a sampling artifact.
 
-Two caveats worth stating plainly:
+> **Note on why these numbers moved.** An earlier run used looser price bounds
+> (max 100 *trillion* VND) and dropped rows on the `kw_cho_thue` flag. Both were
+> wrong: the outlier tail crushed raw-scale R² to 0.045 and made MAE uninformative,
+> and the flag removed ~19% of valid *sales* rows in a price-correlated way
+> (§5, item 2). Aligning `clean_frame` with the EDA's Rule 1 raised retention to
+> 92.9% and lifted R² to 0.747. The text-feature ordering was the same either
+> way; the absolute numbers were not.
 
-- TF-IDF improves the log-scale objective (RMSLE −0.0168 over entities, MAPE
-  −0.93 pts) while raw-scale MAE and R² stay flat. It sharpens *relative*
-  accuracy across the price range; it does not fix the absolute error on the
-  most expensive listings.
-- R² on raw VND is near zero for **every** arm including the baseline. That is
-  the outlier tail (max recorded price > 800 trillion VND) dominating variance,
-  not a modelling failure — see §9.
+### 6.2 TF-IDF analyzer — matched scale, 55,713 train / 22,557 test rows
 
-### 6.2 TF-IDF analyzer — matched scale, 46,815 train / 18,624 test rows
+All three modes share an identical tabular baseline (RMSLE 0.4144, MAPE 30.34%,
+R² 0.7283), so the deltas are directly comparable.
 
-All three modes share an identical tabular baseline (RMSLE 0.4618, MAPE 33.01%),
-so the deltas are directly comparable.
-
-| analyzer | features | RMSLE | Δ RMSLE | MAPE % | Δ MAPE | SVD expl. var |
-|---|---|---|---|---|---|---|
-| `word` (1,2)-grams | 213 | **0.4193** | **−0.0426 (−9.22%)** | **29.81** | **−3.20** | 0.133 |
-| `char_wb` (3,5)-grams | 213 | 0.4270 | −0.0349 (−7.55%) | 30.63 | −2.38 | 0.232 |
-| `both` | 341 | 0.4219 | −0.0399 (−8.64%) | 30.10 | −2.91 | 0.365 |
+| analyzer | features | RMSLE | Δ RMSLE | MAPE % | Δ MAPE | R² | SVD expl. var |
+|---|---|---|---|---|---|---|---|
+| `word` (1,2)-grams | 213 | **0.3694** | **−0.0450 (−10.85%)** | **26.99** | **−3.35** | **0.7573** | 0.132 |
+| `both` | 341 | 0.3710 | −0.0434 (−10.47%) | 27.07 | −3.27 | 0.7522 | 0.362 |
+| `char_wb` (3,5)-grams | 213 | 0.3774 | −0.0370 (−8.93%) | 27.51 | −2.83 | 0.7537 | 0.230 |
 
 **Word bigrams win**, and concatenating the character view does not beat them
 despite 60% more features. The character view explains more variance per
-component (0.232 vs 0.133), but that variance is less useful for price. The
+component (0.230 vs 0.132), but that variance is less useful for price. The
 default is `word`; `char` remains available as a robustness option for
 teencode-heavy sources.
 
-### 6.3 PhoBERT — 6,274 train / 2,975 test rows
+### 6.3 PhoBERT — 4,642 train / 2,254 test rows
 
-| arm | features | RMSLE | MAPE % | MAE (tỷ) |
-|---|---|---|---|---|
-| tabular | 23 | 0.5539 | 42.52 | 9.556 |
-| + tfidf | 213 | 0.5267 | 37.71 | 9.446 |
-| + phobert | 277 | 0.5246 | 38.18 | 9.402 |
+| arm | features | RMSLE | MAPE % | MAE (tỷ) | R² |
+|---|---|---|---|---|---|
+| tabular | 23 | 0.4989 | 39.90 | 4.973 | 0.6815 |
+| + tfidf | 213 | **0.4591** | **36.09** | 4.586 | **0.7063** |
+| + phobert | 277 | 0.4624 | 36.35 | 4.750 | 0.6825 |
 
-Mean-pooled, unfine-tuned PhoBERT adds **−0.0022 RMSLE on top of TF-IDF and
-makes MAPE 0.47 points worse**, at ~18× the wall-clock (1,073 s vs ~60 s for the
-TF-IDF arm). Only 2 `phobert_*` components reach the top-25 by split gain
-(0.66% of total) against 7 `tfidf_*` components (11.43%).
+Adding mean-pooled, unfine-tuned PhoBERT on top of TF-IDF makes every headline
+metric **worse**: RMSLE +0.0033, MAPE +0.26 points, R² −0.0238. Only 2
+`phobert_*` components reach the top-25 by split gain (0.62% of total) against 8
+`tfidf_*` components (9.35%).
+
+The cost comparison is the decisive part. This arm spent 787 s to process 4,642
+training rows; the word TF-IDF arm spent 320 s on 55,713 — roughly **30× more
+compute per row**, to end up slightly behind.
 
 Conclusion: **TF-IDF is the right default.** PhoBERT is worth revisiting as a
-fine-tuned encoder or with embeddings cached once at scale — not as frozen
+fine-tuned encoder, or with embeddings computed once and cached — not as frozen
 pooled features on a few thousand listings. See §9.
 
 ### 6.4 Entity extraction quality — validated against the structured columns
 
 Where a parsed entity and the recorded value both exist, do they agree?
-Measured on the 77,904 training rows.
+Measured on the 92,855 training rows.
 
 | structured column | text entity | text coverage | column missing | overlap | agreement | cells recovered |
 |---|---|---|---|---|---|---|
-| area | `text_area_m2` | 0.789 | 0.000 | 61,462 | 0.924 | 0 |
-| frontage_width | `text_frontage_m` | 0.296 | 0.457 | 15,894 | 0.883 | 7,169 |
-| house_depth | `text_depth_m` | 0.296 | 0.964 | 1,461 | 0.952 | **21,608** |
-| floor_count | `text_floor_count` | 0.372 | 0.838 | 8,776 | 0.919 | **20,234** |
-| bedroom_count | `text_bedroom_count` | 0.388 | 0.491 | 27,121 | 0.887 | 3,114 |
-| bathroom_count | `text_bathroom_count` | 0.255 | 0.526 | 17,964 | 0.935 | 1,936 |
-| road_width | `text_road_width_m` | 0.085 | 0.890 | 1,209 | 0.845 | 5,424 |
-| price *(excluded from features)* | `text_price_vnd` | 0.836 | 0.000 | 65,113 | 0.749 | 0 |
+| area | `text_area_m2` | 0.783 | 0.000 | 72,733 | 0.926 | 0 |
+| frontage_width | `text_frontage_m` | 0.304 | 0.459 | 19,065 | 0.885 | 9,179 |
+| house_depth | `text_depth_m` | 0.304 | 0.970 | 1,408 | 0.953 | **26,841** |
+| floor_count | `text_floor_count` | 0.402 | 0.827 | 11,187 | 0.916 | **26,179** |
+| bedroom_count | `text_bedroom_count` | 0.399 | 0.477 | 32,595 | 0.884 | 4,486 |
+| bathroom_count | `text_bathroom_count` | 0.258 | 0.511 | 21,329 | 0.930 | 2,630 |
+| road_width | `text_road_width_m` | 0.087 | 0.892 | 1,447 | 0.858 | 6,597 |
+| price *(excluded from features)* | `text_price_vnd` | 0.848 | 0.000 | 78,719 | 0.737 | 0 |
 
-85–95% agreement on the physical attributes, against columns that are 46–96%
-null in the source. `house_depth`, `floor_count` and `road_width` gain 21,608,
-20,234 and 5,424 previously-empty cells respectively. That **recovery** — not
+86–95% agreement on the physical attributes, against columns that are 46–97%
+null in the source. `house_depth`, `floor_count` and `road_width` gain 26,841,
+26,179 and 6,597 previously-empty cells respectively. That **recovery** — not
 the raw entity values — is where most of the entity arm's gain comes from.
 
-`text_price_vnd` agrees on only ~75%, consistent with price ranges, per-m²
+`text_price_vnd` agrees on only ~74%, consistent with price ranges, per-m²
 quotes and multi-unit listings; it is excluded from model features regardless (§4).
 
 ### 6.5 Lexicon coverage — measured on 100,000 raw training rows
 
-Prevalence is reported on rows **before** cleaning, so `kw_cho_thue` reflects the
-real rental share rather than the zero it would show post-filter. **No rule is
+Prevalence is reported on rows **before** cleaning, so the table describes the
+corpus the lexicon has to cover rather than the cleaned subset. **No rule is
 dead** — all 47 fire on real data, and the test suite fails any pattern that
 could never match folded text.
 
@@ -288,10 +311,14 @@ could never match folded text.
 | nội thất cơ bản | `kw_noi_that_co_ban` | 2,769 | 2.77% |
 | nhà mới / xây mới | `kw_nha_moi` | 9,908 | 9.91% |
 | nhà cấp 4 | `kw_nha_cap_4` | 2,692 | 2.69% |
-| *cho thuê (rental)* | `kw_cho_thue` | 18,760 | **18.76%** |
+| *mentions* cho thuê † | `kw_cho_thue` | 18,760 | **18.76%** |
 | certificate (derived) | `kw_legal_certificate` | 43,241 | 43.24% |
 | car access (derived) | `kw_road_car_access` | 9,231 | 9.23% |
 | legal risk (derived) | `kw_legal_risk` | 5,045 | 5.04% |
+
+† `kw_cho_thue` counts *mentions* of renting, not rental listings: 96% of the rows
+it fires on are sales pitching rental yield (§5, item 2). Use it as a feature,
+never as a row filter.
 
 The two rare required phrases — `đang chờ sổ` (0.41%) and `ngõ ba gác` (1.23%) —
 are genuinely rare in the corpus rather than badly matched; both are verified
@@ -371,22 +398,24 @@ uv run pytest            # 173 tests
 - The keyword lexicon is hand-built from observed prevalence, not learned. It
   covers the required concepts well but will miss paraphrase; a phrase-mining
   pass over high-error residuals is the obvious extension.
-- `text_price_vnd` agrees with the structured `price` on only ~75% of rows
-  (5% tolerance), versus 85–95% for the physical attributes. Likely causes are
+- `text_price_vnd` agrees with the structured `price` on only ~74% of rows
+  (5% tolerance), versus 86–95% for the physical attributes. Likely causes are
   price ranges, per-m² quotes and multi-unit listings; it needs work before it
   can be trusted for the null-price repair use case.
-- **PhoBERT was measured and lost** (§6.3): as frozen mean-pooled features it adds
-  −0.0022 RMSLE over TF-IDF and worsens MAPE, for ~18× the compute. This is a
-  statement about *pooled, unfine-tuned* embeddings on ~6k listings — not about
-  PhoBERT in general. A fine-tuned encoder, or embeddings cached once and reused,
-  is the fair next comparison; do not pay for pooled PhoBERT by default.
+- **PhoBERT was measured and lost** (§6.3): as frozen mean-pooled features it
+  makes RMSLE, MAPE and R² all *worse* than TF-IDF alone, at ~30× the compute
+  per row. This is a statement about *pooled, unfine-tuned* embeddings on ~5k
+  listings — not about PhoBERT in general. A fine-tuned encoder, or embeddings
+  computed once and cached, is the fair next comparison; do not pay for pooled
+  PhoBERT by default.
 - The TF-IDF representation is capacity-limited, not saturated: `max_features`
   hits its 60,000 cap and 128 SVD components explain only ~13% of word-view
   variance. More components or a larger vocabulary is untested headroom.
 - Only two of the ten shards are used. A walk-forward across all ten would give
   tighter error bars and would test whether the text gain holds as the market
   moves further from the training window.
-- Raw-scale R² is near zero for every arm *including* the tabular baseline,
-  because the price variance is dominated by an outlier tail past 800 trillion
-  VND. RMSLE and MAPE are the metrics that carry information here; reporting R²
-  alone would misdescribe this dataset.
+- `kw_cho_thue` is a blunt instrument. It reliably reports that renting is
+  *mentioned*, but separating an actual rental listing from a sale pitched on
+  yield needs more than a phrase match — combining the marker with a monthly-rate
+  price band, or with `property_type_name`, would make it a classifier. Until
+  then treat it as a feature only (§5, item 2).

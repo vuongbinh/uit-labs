@@ -340,7 +340,6 @@ class BenchmarkConfig:
     n_estimators: int = 1_200
     learning_rate: float = 0.06
     num_leaves: int = 63
-    drop_rentals: bool = True
     exclude_target_leaking_entities: bool = True
     redact_price_in_text: bool = True
     tfidf_mode: str = "word"
@@ -349,8 +348,9 @@ class BenchmarkConfig:
     tfidf_min_df: int = 5
     use_phobert: bool = False
     phobert: dict = field(default_factory=dict)
+    # Mirrors clean_frame's defaults, which follow the EDA's recommended Rule 1.
     min_price: float = 1e8
-    max_price: float = 1e14
+    max_price: float = 2e11
 
 
 def run_uplift_benchmark(
@@ -381,19 +381,17 @@ def run_uplift_benchmark(
     raw_test = load_shard_sample(
         test_source, n_rows=config.n_test, seed=config.seed + 1, cache_dir=cache_dir
     )
-    # Flags are computed on the raw rows first: rental detection is itself an
-    # input to cleaning, so the flag block must exist before any row is dropped.
+    # Flags are computed on the raw rows so prevalence reporting below reflects
+    # the full corpus rather than the cleaned subset.
     raw_train_flags = keyword_extractor.extract(raw_train)
     raw_test_flags = keyword_extractor.extract(raw_test)
 
-    rental_train = raw_train_flags["kw_cho_thue"] if config.drop_rentals else None
-    rental_test = raw_test_flags["kw_cho_thue"] if config.drop_rentals else None
-    train = clean_frame(
-        raw_train, min_price=config.min_price, max_price=config.max_price, drop_mask=rental_train
-    )
-    test = clean_frame(
-        raw_test, min_price=config.min_price, max_price=config.max_price, drop_mask=rental_test
-    )
+    # Cleaning is by price/area bounds only. The min_price floor is what excludes
+    # genuine rental listings (monthly rates of 15-60M VND); the kw_cho_thue text
+    # flag must NOT be used for this, because 96% of the rows it fires on are sale
+    # listings pitching rental yield at a sale-scale price. See clean_frame.
+    train = clean_frame(raw_train, min_price=config.min_price, max_price=config.max_price)
+    test = clean_frame(raw_test, min_price=config.min_price, max_price=config.max_price)
     # clean_frame preserves labels, so this selects exactly the surviving rows.
     train_flags = raw_train_flags.loc[train.index]
     test_flags = raw_test_flags.loc[test.index]
@@ -545,8 +543,9 @@ def run_uplift_benchmark(
         }
 
     agreement = entity_agreement_report(train, train_text[entity_cols])
-    # Lexicon health is measured on the *raw* rows. `train_flags` is post-cleaning,
-    # where kw_cho_thue is zero by construction and would look like a dead rule.
+    # Lexicon health is measured on the *raw* rows: cleaning removes price/area
+    # outliers, and a prevalence table computed after that describes the surviving
+    # subset rather than the corpus the lexicon has to cover.
     prevalence = keyword_extractor.prevalence(raw_train_flags)
 
     return {
@@ -567,8 +566,8 @@ def run_uplift_benchmark(
         "deltas_vs_tabular": deltas,
         "entity_agreement": agreement.to_dict(orient="records"),
         "keyword_prevalence_basis": (
-            f"raw training rows before cleaning (n={len(raw_train_flags):,}); kw_cho_thue is "
-            "zero in the cleaned set by construction"
+            f"raw training rows before cleaning (n={len(raw_train_flags):,}); cleaning drops "
+            "price/area outliers, so prevalence is reported on the full corpus"
         ),
         "keyword_prevalence": prevalence.to_dict(orient="records"),
         "runtime_seconds": round(time.time() - started, 1),
@@ -636,9 +635,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--tfidf-components", type=int, default=96)
     parser.add_argument("--tfidf-min-df", type=int, default=5)
     parser.add_argument("--use-phobert", action="store_true")
-    parser.add_argument("--phobert-rows", type=int, default=4000,
-                        help="subsample size for the PhoBERT arm (CPU encoding is slow)")
-    parser.add_argument("--keep-rentals", action="store_true")
     parser.add_argument("--out-dir", default="outputs/text_features")
     args = parser.parse_args(argv)
 
@@ -651,7 +647,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         tfidf_components=args.tfidf_components,
         tfidf_min_df=args.tfidf_min_df,
         use_phobert=args.use_phobert,
-        drop_rentals=not args.keep_rentals,
         phobert={"n_components": 64, "max_length": 128, "batch_size": 16} if args.use_phobert else {},
     )
     report = run_uplift_benchmark(

@@ -193,6 +193,74 @@ def test_clean_frame_requires_target():
         clean_frame(pd.DataFrame({"area": [40.0]}))
 
 
+def test_price_floor_excludes_monthly_rate_rentals():
+    """Rentals quote a monthly rate; the floor separates them from sales.
+
+    This is the mechanism that keeps rental listings out of the target — not the
+    `kw_cho_thue` text flag, which mostly fires on sale listings pitching yield.
+    """
+    frame = pd.DataFrame(
+        {
+            TARGET_COLUMN: [
+                15_500_000,   # "Cho thuê nhà chính chủ" — monthly rent
+                60_000_000,   # "cho thuê nhà phố ... 60 triệu/tháng"
+                9_000_000_000,  # sale listing that mentions an existing lease
+                7_350_000_000,  # plain sale
+            ],
+            "area": [40.0, 80.0, 60.0, 35.0],
+        }
+    )
+    out = clean_frame(frame)
+    assert list(out.index) == [2, 3]
+
+
+def test_clean_frame_enforces_the_area_band():
+    """Defaults follow the EDA's Rule 1: area in [15, 3000] m².
+
+    Prices are chosen per row so every candidate also sits inside the unit-price
+    band — otherwise the area assertion would be testing the ratio instead.
+    """
+    frame = pd.DataFrame(
+        {
+            TARGET_COLUMN: [5e9, 5e9, 20e9, 20e9],
+            "area": [10.0, 15.0, 3000.0, 5000.0],
+        }
+    )
+    # 10 m² is below the floor; 5000 m² above the ceiling. The middle two pass
+    # on unit price too (333M/m² and 6.7M/m²).
+    assert list(clean_frame(frame).index) == [1, 2]
+
+
+def test_unit_price_band_catches_price_area_mismatch():
+    """Neither bound alone catches these; the ratio does."""
+    frame = pd.DataFrame(
+        {
+            TARGET_COLUMN: [
+                20e9,   # 20 tỷ on 3 m² -> 6.7B/m², far above any real unit price
+                1e8,    # 100M on 500 m² -> 200k/m², below it
+                5e9,    # 5 tỷ on 50 m² -> 100M/m², plausible
+            ],
+            "area": [3.0, 500.0, 50.0],
+        }
+    )
+    assert list(clean_frame(frame).index) == [2]
+
+
+def test_unit_price_bounds_are_overridable():
+    frame = pd.DataFrame({TARGET_COLUMN: [20e9], "area": [3.0]})
+    assert clean_frame(frame).empty
+    # 3 m² also breaches the area floor, so both bounds need relaxing.
+    assert len(clean_frame(frame, min_area=1.0, max_unit_price=1e10)) == 1
+
+
+def test_clean_frame_keeps_rows_that_mention_renting():
+    """A sale-scale listing mentioning rental yield is valid training data."""
+    frame = pd.DataFrame(
+        {TARGET_COLUMN: [9e9], "area": [60.0], "kw_cho_thue": [True]}
+    )
+    assert len(clean_frame(frame)) == 1
+
+
 def test_out_of_time_pair_returns_both_frames(shard):
     train, test = out_of_time_pair(shard, shard, n_train=6, n_test=3, cache_dir=shard.parent)
     assert len(train) == 6 and len(test) == 3
