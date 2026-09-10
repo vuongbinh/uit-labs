@@ -8,7 +8,6 @@
     "n_estimators": 1200,
     "learning_rate": 0.06,
     "num_leaves": 63,
-    "drop_rentals": true,
     "exclude_target_leaking_entities": true,
     "redact_price_in_text": true,
     "tfidf_mode": "word",
@@ -18,60 +17,60 @@
     "use_phobert": false,
     "phobert": {},
     "min_price": 100000000.0,
-    "max_price": 100000000000000.0
+    "max_price": 200000000000.0
   },
   "dataset": {
     "train_shard": "../data/shard_0000.parquet",
     "test_shard": "../data/shard_0009.parquet",
     "train_rows_raw": 100000,
-    "train_rows_clean": 77904,
+    "train_rows_clean": 92855,
     "test_rows_raw": 40000,
-    "test_rows_clean": 29794,
+    "test_rows_clean": 36118,
     "train_time_span": [
       "2025-06-01 00:10:33",
-      "2025-07-30 23:54:20.377000"
+      "2025-07-30 23:59:34.170000"
     ],
     "test_time_span": [
-      "2026-03-01 00:03:32.743000",
+      "2026-03-01 00:03:12.573000",
       "2026-03-30 23:53:44.556000"
     ],
     "tfidf_vocabulary": {
       "w": 60000
     },
     "tfidf_explained_variance": {
-      "w": 0.13235925917489
+      "w": 0.13109464696286294
     }
   },
   "arms": {
     "tabular": {
       "n_features": 23,
       "metrics": {
-        "rmsle": 0.4510604099824541,
-        "mape_pct": 31.47035924163527,
-        "mae_ty": 7.317132533820026,
-        "medae_ty": 1.4157168331226124,
-        "r2": 0.04530067093908785
+        "rmsle": 0.3972749931574353,
+        "mape_pct": 28.591454646661745,
+        "mae_ty": 3.9984998812207375,
+        "medae_ty": 1.4277487383784688,
+        "r2": 0.7469520673265081
       },
       "seed_spread": {
-        "rmsle_std": 0.0003029350383265128,
-        "mape_pct_std": 2.392523468586205e-05
+        "rmsle_std": 0.0003289451539750521,
+        "mape_pct_std": 0.007146413260715079
       },
       "per_seed": [
         {
-          "rmsle": 0.4507574749441276,
-          "mape_pct": 31.470383166869954,
-          "mae_ty": 7.307593926558517,
-          "medae_ty": 1.4172669587190778,
-          "r2": 0.04631577816661858,
-          "n": 29794
+          "rmsle": 0.39694604800346023,
+          "mape_pct": 28.58430823340103,
+          "mae_ty": 3.992912064154557,
+          "medae_ty": 1.4182423715184456,
+          "r2": 0.7478878191296867,
+          "n": 36118
         },
         {
-          "rmsle": 0.4513633450207806,
-          "mape_pct": 31.470335316400583,
-          "mae_ty": 7.326671141081536,
-          "medae_ty": 1.414166707526147,
-          "r2": 0.04428556371155712,
-          "n": 29794
+          "rmsle": 0.39760393831141033,
+          "mape_pct": 28.59860105992246,
+          "mae_ty": 4.004087698286918,
+          "medae_ty": 1.437255105238492,
+          "r2": 0.7460163155233295,
+          "n": 36118
         }
       ],
       "top_features": []
@@ -79,32 +78,32 @@
     "+keywords": {
       "n_features": 70,
       "metrics": {
-        "rmsle": 0.43453531568105713,
-        "mape_pct": 30.097994674853894,
-        "mae_ty": 7.108149325335282,
-        "medae_ty": 1.3530911643224801,
-        "r2": 0.04881956415639638
+        "rmsle": 0.3765258695505419,
+        "mape_pct": 27.014116076717947,
+        "mae_ty": 3.8012231739945395,
+        "medae_ty": 1.365665583609157,
+        "r2": 0.7635055309867913
       },
       "seed_spread": {
-        "rmsle_std": 0.0006847108655977374,
-        "mape_pct_std": 0.12322947778763371
+        "rmsle_std": 0.00020959264378977993,
+        "mape_pct_std": 0.043870866826255295
       },
       "per_seed": [
         {
-          "rmsle": 0.43522002654665487,
-          "mape_pct": 30.22122415264153,
-          "mae_ty": 7.11896050404675,
-          "medae_ty": 1.3583676820184332,
-          "r2": 0.04844049590002153,
-          "n": 29794
+          "rmsle": 0.3767354621943317,
+          "mape_pct": 27.0579869435442,
+          "mae_ty": 3.8001278791456445,
+          "medae_ty": 1.3664957954612962,
+          "r2": 0.7638911018165035,
+          "n": 36118
         },
         {
-          "rmsle": 0.4338506048154594,
-          "mape_pct": 29.97476519706626,
-          "mae_ty": 7.097338146623815,
-          "medae_ty": 1.3478146466265273,
-          "r2": 0.049198632412771226,
-          "n": 29794
+          "rmsle": 0.3763162769067521,
+          "mape_pct": 26.97024520989169,
+          "mae_ty": 3.8023184688434344,
+          "medae_ty": 1.3648353717570176,
+          "r2": 0.7631199601570792,
+          "n": 36118
         }
       ],
       "top_features": []
@@ -112,32 +111,32 @@
     "+entities": {
       "n_features": 85,
       "metrics": {
-        "rmsle": 0.42865188582049396,
-        "mape_pct": 29.65547943599782,
-        "mae_ty": 6.969111869357009,
-        "medae_ty": 1.3312126109352778,
-        "r2": 0.050792735071482686
+        "rmsle": 0.3678309396920086,
+        "mape_pct": 26.33337392615318,
+        "mae_ty": 3.7228868262337627,
+        "medae_ty": 1.340736242882055,
+        "r2": 0.7664648332177859
       },
       "seed_spread": {
-        "rmsle_std": 0.0008384163662712718,
-        "mape_pct_std": 0.0785449244489076
+        "rmsle_std": 0.00015014128981544195,
+        "mape_pct_std": 0.003610698033222448
       },
       "per_seed": [
         {
-          "rmsle": 0.4278134694542227,
-          "mape_pct": 29.57693451154891,
-          "mae_ty": 6.951110544165057,
-          "medae_ty": 1.3264472306023527,
-          "r2": 0.05166392138480147,
-          "n": 29794
+          "rmsle": 0.36768079840219314,
+          "mape_pct": 26.336984624186403,
+          "mae_ty": 3.711461080947773,
+          "medae_ty": 1.341949898621604,
+          "r2": 0.7687189358987769,
+          "n": 36118
         },
         {
-          "rmsle": 0.42949030218676526,
-          "mape_pct": 29.734024360446725,
-          "mae_ty": 6.987113194548962,
-          "medae_ty": 1.3359779912682028,
-          "r2": 0.0499215487581639,
-          "n": 29794
+          "rmsle": 0.367981080981824,
+          "mape_pct": 26.32976322811996,
+          "mae_ty": 3.7343125715197525,
+          "medae_ty": 1.339522587142506,
+          "r2": 0.764210730536795,
+          "n": 36118
         }
       ],
       "top_features": []
@@ -145,236 +144,236 @@
     "+tfidf": {
       "n_features": 213,
       "metrics": {
-        "rmsle": 0.41188558594700064,
-        "mape_pct": 28.730527590938934,
-        "mae_ty": 7.012943553680849,
-        "medae_ty": 1.3443220399109812,
-        "r2": 0.045587208997850126
+        "rmsle": 0.3572611071843572,
+        "mape_pct": 25.9220850567456,
+        "mae_ty": 3.6786304188293313,
+        "medae_ty": 1.329774672940326,
+        "r2": 0.7753993041539635
       },
       "seed_spread": {
-        "rmsle_std": 0.0007194594609192528,
-        "mape_pct_std": 0.08791070097939624
+        "rmsle_std": 0.0005766165586202354,
+        "mape_pct_std": 0.010049990893916672
       },
       "per_seed": [
         {
-          "rmsle": 0.4126050454079199,
-          "mape_pct": 28.81843829191833,
-          "mae_ty": 7.0344004080446,
-          "medae_ty": 1.3545274630964896,
-          "r2": 0.045178290246413955,
-          "n": 29794
+          "rmsle": 0.35783772374297745,
+          "mape_pct": 25.93213504763952,
+          "mae_ty": 3.6795208099903483,
+          "medae_ty": 1.3313983042902167,
+          "r2": 0.7740139576799088,
+          "n": 36118
         },
         {
-          "rmsle": 0.4111661264860814,
-          "mape_pct": 28.642616889959537,
-          "mae_ty": 6.9914866993170985,
-          "medae_ty": 1.3341166167254725,
-          "r2": 0.0459961277492863,
-          "n": 29794
+          "rmsle": 0.356684490625737,
+          "mape_pct": 25.912035065851686,
+          "mae_ty": 3.6777400276683148,
+          "medae_ty": 1.3281510415904352,
+          "r2": 0.7767846506280182,
+          "n": 36118
         }
       ],
       "top_features": [
         [
           "area",
-          0.21971458357420445
+          0.21810491386041445
         ],
         [
           "tgt_district_name",
-          0.21770107252041832
-        ],
-        [
-          "tfidf_w_5",
-          0.09615457880823257
+          0.19929230766149458
         ],
         [
           "tgt_ward_name",
-          0.0808333361142332
+          0.09788935335849545
+        ],
+        [
+          "tfidf_w_5",
+          0.0912256417762428
         ],
         [
           "freq_district_name",
-          0.04896192817541966
-        ],
-        [
-          "frontage_width",
-          0.02851718979253297
-        ],
-        [
-          "bedroom_count",
-          0.027576444019097812
-        ],
-        [
-          "freq_property_type_name",
-          0.02609133366724801
-        ],
-        [
-          "freq_province_name",
-          0.02315367890507092
+          0.03699632561927819
         ],
         [
           "tgt_province_name",
-          0.015911611858384456
+          0.03611417314522799
         ],
         [
-          "text_area_m2",
-          0.013408545675538206
+          "bedroom_count",
+          0.03097723402449419
         ],
         [
           "floor_count",
-          0.013071012388238394
+          0.02871344884613117
         ],
         [
-          "freq_ward_name",
-          0.011337985646992335
+          "freq_property_type_name",
+          0.023235098428117787
         ],
         [
-          "tfidf_w_1",
-          0.01123231005726208
+          "text_area_m2",
+          0.022692605064448337
+        ],
+        [
+          "frontage_width",
+          0.021812225665368803
         ],
         [
           "bathroom_count",
-          0.011206067694307964
+          0.01516944096331388
+        ],
+        [
+          "tfidf_w_1",
+          0.014775728460603878
+        ],
+        [
+          "freq_province_name",
+          0.01189736451951473
+        ],
+        [
+          "freq_ward_name",
+          0.009842456821628782
         ],
         [
           "tfidf_w_10",
-          0.008436841410600983
-        ],
-        [
-          "tfidf_w_14",
-          0.005425723358346234
-        ],
-        [
-          "tfidf_w_3",
-          0.005278449489722072
+          0.008838628336263636
         ],
         [
           "implied_depth_from_area",
-          0.004838494347341782
-        ],
-        [
-          "tfidf_w_9",
-          0.00465430002045907
+          0.007353722168443032
         ],
         [
           "tfidf_w_2",
-          0.0034654663860309225
+          0.004671008809673044
+        ],
+        [
+          "tfidf_w_14",
+          0.004596887977005114
+        ],
+        [
+          "tfidf_w_3",
+          0.0031066830847382553
         ],
         [
           "tfidf_w_11",
-          0.0024194495333343244
-        ],
-        [
-          "tfidf_w_116",
-          0.0019249880270456792
-        ],
-        [
-          "tfidf_w_8",
-          0.0018008644113485601
+          0.0028594376980452052
         ],
         [
           "freq_project_name",
-          0.0017314490577397495
+          0.0028032693526390245
+        ],
+        [
+          "tfidf_w_19",
+          0.0026087749053951095
+        ],
+        [
+          "text_bedroom_count",
+          0.0025154002040234727
+        ],
+        [
+          "kw_kinh_doanh",
+          0.0024810830507139376
         ]
       ]
     }
   },
   "deltas_vs_tabular": {
     "+keywords": {
-      "rmsle_delta": -0.01652509430139698,
-      "rmsle_delta_pct": -3.6636100033784373,
-      "mape_delta_pct_points": -1.3723645667813749,
-      "mae_ty_delta": -0.20898320848474405,
-      "r2_delta": 0.0035188932173085274
+      "rmsle_delta": -0.020749123606893405,
+      "rmsle_delta_pct": -5.222861736648694,
+      "mape_delta_pct_points": -1.577338569943798,
+      "mae_ty_delta": -0.19727670722619806,
+      "r2_delta": 0.016553463660283207
     },
     "+entities": {
-      "rmsle_delta": -0.022408524161960153,
-      "rmsle_delta_pct": -4.967965191809192,
-      "mape_delta_pct_points": -1.8148798056374496,
-      "mae_ty_delta": -0.34802066446301705,
-      "r2_delta": 0.005492064132394836
+      "rmsle_delta": -0.029444053465426723,
+      "rmsle_delta_pct": -7.411504366638653,
+      "mape_delta_pct_points": -2.2580807205085662,
+      "mae_ty_delta": -0.27561305498697486,
+      "r2_delta": 0.019512765891277817
     },
     "+tfidf": {
-      "rmsle_delta": -0.03917482403545347,
-      "rmsle_delta_pct": -8.685050420846586,
-      "mape_delta_pct_points": -2.7398316506963347,
-      "mae_ty_delta": -0.3041889801391777,
-      "r2_delta": 0.00028653805876227567
+      "rmsle_delta": -0.04001388597307809,
+      "rmsle_delta_pct": -10.072087763455341,
+      "mape_delta_pct_points": -2.669369589916144,
+      "mae_ty_delta": -0.31986946239140623,
+      "r2_delta": 0.028447236827455424
     }
   },
   "entity_agreement": [
     {
       "structured_column": "area",
       "text_entity": "text_area_m2",
-      "text_coverage": 0.7889453686588622,
+      "text_coverage": 0.7832965376124065,
       "structured_missing_rate": 0.0,
-      "overlap_rows": 61462,
-      "agreement_rate": 0.9242296052845661,
+      "overlap_rows": 72733,
+      "agreement_rate": 0.9256046086370698,
       "recovered_when_missing": 0
     },
     {
       "structured_column": "frontage_width",
       "text_entity": "text_frontage_m",
-      "text_coverage": 0.29604384883959745,
-      "structured_missing_rate": 0.4572935921133703,
-      "overlap_rows": 15894,
-      "agreement_rate": 0.8834151252044796,
-      "recovered_when_missing": 7169
+      "text_coverage": 0.3041731732270745,
+      "structured_missing_rate": 0.45870443164073016,
+      "overlap_rows": 19065,
+      "agreement_rate": 0.8851298190401259,
+      "recovered_when_missing": 9179
     },
     {
       "structured_column": "house_depth",
       "text_entity": "text_depth_m",
-      "text_coverage": 0.29612086670774285,
-      "structured_missing_rate": 0.9644049086054631,
-      "overlap_rows": 1461,
-      "agreement_rate": 0.9520876112251883,
-      "recovered_when_missing": 21608
+      "text_coverage": 0.30422702062355284,
+      "structured_missing_rate": 0.9704270098540736,
+      "overlap_rows": 1408,
+      "agreement_rate": 0.953125,
+      "recovered_when_missing": 26841
     },
     {
       "structured_column": "floor_count",
       "text_entity": "text_floor_count",
-      "text_coverage": 0.3723813924830561,
-      "structured_missing_rate": 0.8382624768946395,
-      "overlap_rows": 8776,
-      "agreement_rate": 0.919211485870556,
-      "recovered_when_missing": 20234
+      "text_coverage": 0.40241236336223146,
+      "structured_missing_rate": 0.8273006300145388,
+      "overlap_rows": 11187,
+      "agreement_rate": 0.9159738982747833,
+      "recovered_when_missing": 26179
     },
     {
       "structured_column": "bedroom_count",
       "text_entity": "text_bedroom_count",
-      "text_coverage": 0.3881058738960772,
-      "structured_missing_rate": 0.4908092010679811,
-      "overlap_rows": 27121,
-      "agreement_rate": 0.8865454813613067,
-      "recovered_when_missing": 3114
+      "text_coverage": 0.39934306176296375,
+      "structured_missing_rate": 0.4768833126918314,
+      "overlap_rows": 32595,
+      "agreement_rate": 0.883509740757785,
+      "recovered_when_missing": 4486
     },
     {
       "structured_column": "bathroom_count",
       "text_entity": "text_bathroom_count",
-      "text_coverage": 0.255442596015609,
-      "structured_missing_rate": 0.5257239679605669,
-      "overlap_rows": 17964,
-      "agreement_rate": 0.935148073925629,
-      "recovered_when_missing": 1936
+      "text_coverage": 0.25802595444510257,
+      "structured_missing_rate": 0.5107425555974369,
+      "overlap_rows": 21329,
+      "agreement_rate": 0.9302358291527967,
+      "recovered_when_missing": 2630
     },
     {
       "structured_column": "road_width",
       "text_entity": "text_road_width_m",
-      "text_coverage": 0.08514325323475046,
-      "structured_missing_rate": 0.8900698295337852,
-      "overlap_rows": 1209,
-      "agreement_rate": 0.8453267162944582,
-      "recovered_when_missing": 5424
+      "text_coverage": 0.08662969145441818,
+      "structured_missing_rate": 0.8924344407947876,
+      "overlap_rows": 1447,
+      "agreement_rate": 0.8576364892881825,
+      "recovered_when_missing": 6597
     },
     {
       "structured_column": "price",
       "text_entity": "text_price_vnd",
-      "text_coverage": 0.8358107414253441,
+      "text_coverage": 0.8477626406763233,
       "structured_missing_rate": 0.0,
-      "overlap_rows": 65113,
-      "agreement_rate": 0.7485294795202186,
+      "overlap_rows": 78719,
+      "agreement_rate": 0.7373061141528728,
       "recovered_when_missing": 0
     }
   ],
-  "keyword_prevalence_basis": "raw training rows before cleaning (n=100,000); kw_cho_thue is zero in the cleaned set by construction",
+  "keyword_prevalence_basis": "raw training rows before cleaning (n=100,000); cleaning drops price/area outliers, so prevalence is reported on the full corpus",
   "keyword_prevalence": [
     {
       "feature": "kw_legal_clean",
@@ -484,7 +483,7 @@
     {
       "feature": "kw_cho_thue",
       "category": "intent",
-      "label": "cho thuê (tin thuê, không phải bán)",
+      "label": "nhắc đến cho thuê (không phân loại được tin thuê)",
       "hits": 18760,
       "rate": 0.1876
     },
@@ -706,5 +705,5 @@
       "rate": 0.00091
     }
   ],
-  "runtime_seconds": 638.2
+  "runtime_seconds": 527.4
 }

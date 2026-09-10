@@ -96,10 +96,21 @@ def test_derived_flags_are_disjunctions():
     assert not bool(negative["kw_furnished"])
 
 
-def test_rental_intent_detected():
-    """The corpus mixes rentals with sales; the flag is how they get separated."""
-    assert bool(flags_for("Cho thuê nguyên căn mặt tiền")["kw_cho_thue"])
-    assert not bool(flags_for("Bán nhà mặt tiền")["kw_cho_thue"])
+def test_cho_thue_flags_a_mention_not_a_listing_type():
+    """`kw_cho_thue` means "renting is mentioned", not "this is a rental listing".
+
+    Locked in because the distinction is load-bearing: 96% of the rows this fires
+    on in shard_0000 carry a sale-scale price (median 10 tỷ VND) and are sale
+    listings pitching rental yield. Using it as a row filter silently discards
+    ~19% of valid training data in a price-correlated way. Rental *listings* are
+    excluded by clean_frame's price floor instead, since they quote a monthly rate.
+    """
+    # A genuine rental listing fires.
+    assert bool(flags_for("Cho thuê nhà chính chủ, 60 triệu/tháng")["kw_cho_thue"])
+    # A SALE listing that pitches rental yield also fires — expected, not a bug.
+    assert bool(flags_for("Bán nhà mặt tiền, sẵn hợp đồng thuê, tiện cho thuê")["kw_cho_thue"])
+    # A plain sale with no rental mention does not.
+    assert not bool(flags_for("Bán nhà mặt tiền sổ đỏ")["kw_cho_thue"])
 
 
 def test_extract_preserves_frame_index():

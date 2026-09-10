@@ -156,10 +156,16 @@ LEXICON: tuple[KeywordRule, ...] = (
     KeywordRule("san_thuong", "condition", "sân thượng", r"\bsan\s+thuong\b"),
     KeywordRule("tang_ham", "condition", "tầng hầm / bán hầm", r"\btang\s+ham\b|\bban\s+ham\b|\bham\s+(xe|o\s?to|gara)\b"),
     # --------------------------------------------------------------- intent
+    # MEASURES A MENTION, NOT A LISTING TYPE. On shard_0000 this fires on 18.8%
+    # of rows, but 96% of those carry a sale-scale price (median 10 tỷ VND): they
+    # are sale listings pitching rental yield ("sẵn hợp đồng thuê", "tiện cho
+    # thuê"), not rentals. Genuine rental listings quote a monthly rate (15-60M
+    # VND) and are excluded by clean_frame's price floor instead. Use this as a
+    # feature, never as a row filter.
     KeywordRule(
         "cho_thue",
         "intent",
-        "cho thuê (tin thuê, không phải bán)",
+        "nhắc đến cho thuê (không phân loại được tin thuê)",
         r"\bcho\s+thue\b|\bgia\s+thue\b|\bthue\s+nguyen\s+can\b|\bcan\s+ho\s+cho\s+thue\b",
     ),
     KeywordRule("kinh_doanh", "intent", "tiện kinh doanh", r"\bkinh\s+doanh\b|\bbuon\s+ban\b|\bcho\s+thue\s+kinh\s+doanh\b"),

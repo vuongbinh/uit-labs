@@ -170,20 +170,35 @@ def clean_frame(
     df: pd.DataFrame,
     *,
     min_price: float = 1e8,
-    max_price: float = 1e14,
-    min_area: float = 1.0,
-    max_area: float = 100_000.0,
+    max_price: float = 2e11,
+    min_area: float = 15.0,
+    max_area: float = 3_000.0,
+    min_unit_price: float = 3e6,
+    max_unit_price: float = 8e8,
     drop_mask: pd.Series | None = None,
 ) -> pd.DataFrame:
     """Drop records that cannot support a sale-price regression.
 
-    The published data mixes sale and rental listings; a rental's monthly asking
-    price is orders of magnitude below a sale price, so leaving them in corrupts
-    the ``log1p(price)`` target.  Pass ``drop_mask`` (boolean, index-aligned to
-    ``df``) to exclude them — typically the keyword extractor's ``kw_cho_thue``
-    flag.  The price/area bounds trim the placeholder and typo tail: on shard
-    ``0000`` the minimum recorded price is 300,000 VND and the maximum exceeds
-    800 trillion VND.
+    Defaults match **Rule 1 ("Recommended Baseline")** in
+    ``reports/vietnam_real_estates_eda.md`` so this module and the baseline
+    notebook model the same population: price in [100M, 200B] VND, area in
+    [15, 3000] m², and unit price in [3M, 800M] VND/m². On the full corpus that
+    rule retains ~89.6% of rows and leaves log-price skew at +0.19.
+
+    The unit-price band is what catches price/area mismatches that neither bound
+    catches alone — a 20 tỷ listing recorded as 3 m², or a 500 m² flat priced
+    like a parking space.
+
+    The ``min_price`` floor is also what excludes genuine rental listings, which
+    quote a *monthly* rate (15-60M VND on ``shard_0000``), plus token deposits.
+
+    Do **not** filter rentals with the ``kw_cho_thue`` text flag. It measures a
+    *mention*, and 96% of the rows it fires on carry a sale-scale price (median
+    10 tỷ VND) — they are sale listings pitching rental yield ("sẵn hợp đồng
+    thuê", "tiện cho thuê"). Dropping on it discards ~19% of valid training rows
+    and does so non-randomly, since yield-pitched properties form a coherent
+    higher-priced segment. ``drop_mask`` stays available for a caller that has a
+    trustworthy exclusion signal.
 
     The original index is **preserved** so feature blocks computed on ``df`` stay
     row-aligned with the returned subset; call ``reset_index`` explicitly if a
@@ -191,11 +206,13 @@ def clean_frame(
     """
     if TARGET_COLUMN not in df.columns:
         raise KeyError(f"frame is missing the target column {TARGET_COLUMN!r}")
-    price = df[TARGET_COLUMN]
+    price = pd.to_numeric(df[TARGET_COLUMN], errors="coerce")
     keep = price.notna() & (price >= min_price) & (price <= max_price)
     if "area" in df.columns:
         area = pd.to_numeric(df["area"], errors="coerce")
         keep &= area.notna() & (area >= min_area) & (area <= max_area)
+        unit_price = price / area.where(area > 0)
+        keep &= unit_price.notna() & (unit_price >= min_unit_price) & (unit_price <= max_unit_price)
     if drop_mask is not None:
         if not drop_mask.index.equals(df.index):
             raise ValueError("drop_mask index does not align with the frame index")
