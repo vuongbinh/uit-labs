@@ -2,7 +2,7 @@
 
 - Train: 77,904 clean rows of 100,000 (2025-06-01 → 2025-07-30)
 - Test (out-of-time): 29,794 clean rows of 40,000 (2026-03-01 → 2026-03-30)
-- Runtime: 480.2s
+- Runtime: 638.2s
 
 | arm | feats | RMSLE | MAPE % | MAE (tỷ) | MedAE (tỷ) | R² |
 |---|---|---|---|---|---|---|

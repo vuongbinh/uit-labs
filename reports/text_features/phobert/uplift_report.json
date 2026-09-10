@@ -1,0 +1,713 @@
+{
+  "config": {
+    "n_train": 8000,
+    "n_test": 4000,
+    "seed": 0,
+    "n_seeds": 1,
+    "valid_fraction": 0.15,
+    "n_estimators": 1200,
+    "learning_rate": 0.06,
+    "num_leaves": 63,
+    "drop_rentals": true,
+    "exclude_target_leaking_entities": true,
+    "redact_price_in_text": true,
+    "tfidf_mode": "word",
+    "tfidf_components": 128,
+    "tfidf_max_features": 60000,
+    "tfidf_min_df": 5,
+    "use_phobert": true,
+    "phobert": {
+      "n_components": 64,
+      "max_length": 128,
+      "batch_size": 16
+    },
+    "min_price": 100000000.0,
+    "max_price": 100000000000000.0
+  },
+  "dataset": {
+    "train_shard": "../data/shard_0000.parquet",
+    "test_shard": "../data/shard_0009.parquet",
+    "train_rows_raw": 8000,
+    "train_rows_clean": 6274,
+    "test_rows_raw": 4000,
+    "test_rows_clean": 2975,
+    "train_time_span": [
+      "2025-06-01 01:41:34.096000",
+      "2025-07-30 23:08:09.229000"
+    ],
+    "test_time_span": [
+      "2026-03-01 01:03:28.496000",
+      "2026-03-30 22:55:26.691000"
+    ],
+    "tfidf_vocabulary": {
+      "w": 21814
+    },
+    "tfidf_explained_variance": {
+      "w": 0.18568976848434704
+    }
+  },
+  "arms": {
+    "tabular": {
+      "n_features": 23,
+      "metrics": {
+        "rmsle": 0.5539004051894804,
+        "mape_pct": 42.5233819788389,
+        "mae_ty": 9.555708330493044,
+        "medae_ty": 1.7106791652782403,
+        "r2": 0.01601584099253983
+      },
+      "seed_spread": {
+        "rmsle_std": 0.0,
+        "mape_pct_std": 0.0
+      },
+      "per_seed": [
+        {
+          "rmsle": 0.5539004051894804,
+          "mape_pct": 42.5233819788389,
+          "mae_ty": 9.555708330493044,
+          "medae_ty": 1.7106791652782403,
+          "r2": 0.01601584099253983,
+          "n": 2975
+        }
+      ],
+      "top_features": []
+    },
+    "+keywords": {
+      "n_features": 70,
+      "metrics": {
+        "rmsle": 0.5413207395892676,
+        "mape_pct": 40.97019713015725,
+        "mae_ty": 9.328679501790008,
+        "medae_ty": 1.6664956908669262,
+        "r2": 0.016530648255951297
+      },
+      "seed_spread": {
+        "rmsle_std": 0.0,
+        "mape_pct_std": 0.0
+      },
+      "per_seed": [
+        {
+          "rmsle": 0.5413207395892676,
+          "mape_pct": 40.97019713015725,
+          "mae_ty": 9.328679501790008,
+          "medae_ty": 1.6664956908669262,
+          "r2": 0.016530648255951297,
+          "n": 2975
+        }
+      ],
+      "top_features": []
+    },
+    "+entities": {
+      "n_features": 85,
+      "metrics": {
+        "rmsle": 0.5389431073444295,
+        "mape_pct": 40.45047177592791,
+        "mae_ty": 9.449903974669887,
+        "medae_ty": 1.6811960669416552,
+        "r2": 0.015258449324905166
+      },
+      "seed_spread": {
+        "rmsle_std": 0.0,
+        "mape_pct_std": 0.0
+      },
+      "per_seed": [
+        {
+          "rmsle": 0.5389431073444295,
+          "mape_pct": 40.45047177592791,
+          "mae_ty": 9.449903974669887,
+          "medae_ty": 1.6811960669416552,
+          "r2": 0.015258449324905166,
+          "n": 2975
+        }
+      ],
+      "top_features": []
+    },
+    "+tfidf": {
+      "n_features": 213,
+      "metrics": {
+        "rmsle": 0.526732356205999,
+        "mape_pct": 37.71118867293254,
+        "mae_ty": 9.446280891041807,
+        "medae_ty": 1.5948087298715554,
+        "r2": 0.01681772109919899
+      },
+      "seed_spread": {
+        "rmsle_std": 0.0,
+        "mape_pct_std": 0.0
+      },
+      "per_seed": [
+        {
+          "rmsle": 0.526732356205999,
+          "mape_pct": 37.71118867293254,
+          "mae_ty": 9.446280891041807,
+          "medae_ty": 1.5948087298715554,
+          "r2": 0.01681772109919899,
+          "n": 2975
+        }
+      ],
+      "top_features": []
+    },
+    "+phobert": {
+      "n_features": 277,
+      "metrics": {
+        "rmsle": 0.5245822903414862,
+        "mape_pct": 38.18061809279769,
+        "mae_ty": 9.401804060108399,
+        "medae_ty": 1.5901342986850033,
+        "r2": 0.01754898257727
+      },
+      "seed_spread": {
+        "rmsle_std": 0.0,
+        "mape_pct_std": 0.0
+      },
+      "per_seed": [
+        {
+          "rmsle": 0.5245822903414862,
+          "mape_pct": 38.18061809279769,
+          "mae_ty": 9.401804060108399,
+          "medae_ty": 1.5901342986850033,
+          "r2": 0.01754898257727,
+          "n": 2975
+        }
+      ],
+      "top_features": [
+        [
+          "area",
+          0.2046014755983965
+        ],
+        [
+          "tgt_district_name",
+          0.18123116073539033
+        ],
+        [
+          "tgt_ward_name",
+          0.134115301676483
+        ],
+        [
+          "freq_district_name",
+          0.04783391236040941
+        ],
+        [
+          "tfidf_w_6",
+          0.03703113612906878
+        ],
+        [
+          "bedroom_count",
+          0.03372544278567652
+        ],
+        [
+          "tfidf_w_5",
+          0.027489784927108653
+        ],
+        [
+          "tgt_province_name",
+          0.027059248638247626
+        ],
+        [
+          "tfidf_w_10",
+          0.023569299190774943
+        ],
+        [
+          "frontage_width",
+          0.016742732885506127
+        ],
+        [
+          "text_area_m2",
+          0.01605228228911363
+        ],
+        [
+          "freq_property_type_name",
+          0.014809467508022877
+        ],
+        [
+          "freq_province_name",
+          0.014776160525067241
+        ],
+        [
+          "freq_ward_name",
+          0.013263661976437578
+        ],
+        [
+          "tfidf_w_2",
+          0.010849955823323503
+        ],
+        [
+          "floor_count",
+          0.009478259562427337
+        ],
+        [
+          "bathroom_count",
+          0.009437419546721847
+        ],
+        [
+          "tfidf_w_3",
+          0.006812886479210083
+        ],
+        [
+          "tfidf_w_1",
+          0.005823729930838113
+        ],
+        [
+          "implied_depth_from_area",
+          0.004098667033509817
+        ],
+        [
+          "phobert_9",
+          0.00347762359106826
+        ],
+        [
+          "phobert_7",
+          0.0031532703447796845
+        ],
+        [
+          "text_floor_count",
+          0.0028360129499614196
+        ],
+        [
+          "tfidf_w_34",
+          0.0026847837307504853
+        ],
+        [
+          "kw_thang_may",
+          0.002481857427268335
+        ]
+      ]
+    }
+  },
+  "deltas_vs_tabular": {
+    "+keywords": {
+      "rmsle_delta": -0.01257966560021273,
+      "rmsle_delta_pct": -2.271106047649384,
+      "mape_delta_pct_points": -1.5531848486816457,
+      "mae_ty_delta": -0.22702882870303576,
+      "r2_delta": 0.0005148072634114653
+    },
+    "+entities": {
+      "rmsle_delta": -0.014957297845050843,
+      "rmsle_delta_pct": -2.700358711587184,
+      "mape_delta_pct_points": -2.0729102029109896,
+      "mae_ty_delta": -0.10580435582315673,
+      "r2_delta": -0.0007573916676346659
+    },
+    "+tfidf": {
+      "rmsle_delta": -0.027168048983481352,
+      "rmsle_delta_pct": -4.90486172765799,
+      "mape_delta_pct_points": -4.812193305906355,
+      "mae_ty_delta": -0.10942743945123645,
+      "r2_delta": 0.0008018801066591585
+    },
+    "+phobert": {
+      "rmsle_delta": -0.02931811484799418,
+      "rmsle_delta_pct": -5.293030041739169,
+      "mape_delta_pct_points": -4.342763886041212,
+      "mae_ty_delta": -0.15390427038464516,
+      "r2_delta": 0.0015331415847301688
+    }
+  },
+  "entity_agreement": [
+    {
+      "structured_column": "area",
+      "text_entity": "text_area_m2",
+      "text_coverage": 0.7907236212942301,
+      "structured_missing_rate": 0.0,
+      "overlap_rows": 4961,
+      "agreement_rate": 0.9242088288651481,
+      "recovered_when_missing": 0
+    },
+    {
+      "structured_column": "frontage_width",
+      "text_entity": "text_frontage_m",
+      "text_coverage": 0.2862607586866433,
+      "structured_missing_rate": 0.46844118584635003,
+      "overlap_rows": 1234,
+      "agreement_rate": 0.8914100486223663,
+      "recovered_when_missing": 562
+    },
+    {
+      "structured_column": "house_depth",
+      "text_entity": "text_depth_m",
+      "text_coverage": 0.2862607586866433,
+      "structured_missing_rate": 0.9633407714376793,
+      "overlap_rows": 124,
+      "agreement_rate": 0.9435483870967742,
+      "recovered_when_missing": 1672
+    },
+    {
+      "structured_column": "floor_count",
+      "text_entity": "text_floor_count",
+      "text_coverage": 0.36356391456805864,
+      "structured_missing_rate": 0.8418871533312081,
+      "overlap_rows": 690,
+      "agreement_rate": 0.927536231884058,
+      "recovered_when_missing": 1591
+    },
+    {
+      "structured_column": "bedroom_count",
+      "text_entity": "text_bedroom_count",
+      "text_coverage": 0.38810965890978644,
+      "structured_missing_rate": 0.47848262671342046,
+      "overlap_rows": 2220,
+      "agreement_rate": 0.8936936936936937,
+      "recovered_when_missing": 215
+    },
+    {
+      "structured_column": "bathroom_count",
+      "text_entity": "text_bathroom_count",
+      "text_coverage": 0.25294867708001273,
+      "structured_missing_rate": 0.5167357347784507,
+      "overlap_rows": 1445,
+      "agreement_rate": 0.9439446366782007,
+      "recovered_when_missing": 142
+    },
+    {
+      "structured_column": "road_width",
+      "text_entity": "text_road_width_m",
+      "text_coverage": 0.08320051004144087,
+      "structured_missing_rate": 0.8908192540643928,
+      "overlap_rows": 96,
+      "agreement_rate": 0.8541666666666666,
+      "recovered_when_missing": 426
+    },
+    {
+      "structured_column": "price",
+      "text_entity": "text_price_vnd",
+      "text_coverage": 0.8328020401657634,
+      "structured_missing_rate": 0.0,
+      "overlap_rows": 5225,
+      "agreement_rate": 0.7444976076555024,
+      "recovered_when_missing": 0
+    }
+  ],
+  "keyword_prevalence": [
+    {
+      "feature": "kw_legal_clean",
+      "category": "derived",
+      "label": "phap_ly_ro_rang / so_do_hong / cong_chung",
+      "hits": 3409,
+      "rate": 0.543353522473701
+    },
+    {
+      "feature": "kw_legal_certificate",
+      "category": "derived",
+      "label": "so_do / so_hong",
+      "hits": 2662,
+      "rate": 0.4242907236212942
+    },
+    {
+      "feature": "kw_so_do_hong",
+      "category": "legal",
+      "label": "sổ đỏ / sổ hồng (either certificate)",
+      "hits": 2662,
+      "rate": 0.4242907236212942
+    },
+    {
+      "feature": "kw_mat_tien",
+      "category": "access",
+      "label": "mặt tiền",
+      "hits": 2206,
+      "rate": 0.3516098182977367
+    },
+    {
+      "feature": "kw_phap_ly",
+      "category": "legal",
+      "label": "pháp lý",
+      "hits": 2085,
+      "rate": 0.3323238763149506
+    },
+    {
+      "feature": "kw_chinh_chu",
+      "category": "legal",
+      "label": "chính chủ",
+      "hits": 1926,
+      "rate": 0.30698119222186804
+    },
+    {
+      "feature": "kw_noi_that",
+      "category": "condition",
+      "label": "nội thất (bất kỳ)",
+      "hits": 1637,
+      "rate": 0.2609180745935607
+    },
+    {
+      "feature": "kw_furnished",
+      "category": "derived",
+      "label": "full_noi_that / noi_that",
+      "hits": 1637,
+      "rate": 0.2609180745935607
+    },
+    {
+      "feature": "kw_o_to",
+      "category": "access",
+      "label": "ô tô (bất kỳ ngữ cảnh nào)",
+      "hits": 1615,
+      "rate": 0.2574115396875996
+    },
+    {
+      "feature": "kw_so_do",
+      "category": "legal",
+      "label": "sổ đỏ",
+      "hits": 1458,
+      "rate": 0.23238763149505898
+    },
+    {
+      "feature": "kw_kinh_doanh",
+      "category": "intent",
+      "label": "tiện kinh doanh",
+      "hits": 1361,
+      "rate": 0.2169270003187759
+    },
+    {
+      "feature": "kw_ban_gap",
+      "category": "intent",
+      "label": "bán gấp / bán nhanh",
+      "hits": 1334,
+      "rate": 0.21262352566146
+    },
+    {
+      "feature": "kw_so_hong",
+      "category": "legal",
+      "label": "sổ hồng",
+      "hits": 1261,
+      "rate": 0.20098820529167996
+    },
+    {
+      "feature": "kw_phap_ly_ro_rang",
+      "category": "legal",
+      "label": "pháp lý rõ ràng / đầy đủ",
+      "hits": 1239,
+      "rate": 0.19748167038571884
+    },
+    {
+      "feature": "kw_thuong_luong",
+      "category": "intent",
+      "label": "có thương lượng",
+      "hits": 1234,
+      "rate": 0.19668473063436404
+    },
+    {
+      "feature": "kw_full_noi_that",
+      "category": "condition",
+      "label": "full nội thất / nội thất đầy đủ",
+      "hits": 1032,
+      "rate": 0.1644883646796302
+    },
+    {
+      "feature": "kw_gia_re",
+      "category": "intent",
+      "label": "giá rẻ / giá tốt",
+      "hits": 782,
+      "rate": 0.12464137711189034
+    },
+    {
+      "feature": "kw_duong_rong",
+      "category": "access",
+      "label": "đường rộng / đường lớn",
+      "hits": 713,
+      "rate": 0.11364360854319414
+    },
+    {
+      "feature": "kw_hem",
+      "category": "access",
+      "label": "hẻm",
+      "hits": 706,
+      "rate": 0.11252789289129742
+    },
+    {
+      "feature": "kw_lo_goc",
+      "category": "access",
+      "label": "lô góc / căn góc",
+      "hits": 666,
+      "rate": 0.10615237488045903
+    },
+    {
+      "feature": "kw_nha_moi",
+      "category": "condition",
+      "label": "nhà mới / xây mới",
+      "hits": 591,
+      "rate": 0.09419827861013708
+    },
+    {
+      "feature": "kw_thang_may",
+      "category": "condition",
+      "label": "thang máy",
+      "hits": 544,
+      "rate": 0.08670704494740197
+    },
+    {
+      "feature": "kw_road_car_access",
+      "category": "derived",
+      "label": "o_to_do_cua / xe_hoi_vao_nha / hem_xe_hoi",
+      "hits": 540,
+      "rate": 0.08606949314631814
+    },
+    {
+      "feature": "kw_cong_chung",
+      "category": "legal",
+      "label": "công chứng",
+      "hits": 509,
+      "rate": 0.0811284666879184
+    },
+    {
+      "feature": "kw_xe_hoi",
+      "category": "access",
+      "label": "xe hơi",
+      "hits": 487,
+      "rate": 0.07762193178195728
+    },
+    {
+      "feature": "kw_via_he",
+      "category": "access",
+      "label": "vỉa hè",
+      "hits": 412,
+      "rate": 0.06566783551163533
+    },
+    {
+      "feature": "kw_o_ngay",
+      "category": "condition",
+      "label": "vào ở ngay",
+      "hits": 392,
+      "rate": 0.06248007650621613
+    },
+    {
+      "feature": "kw_san_thuong",
+      "category": "condition",
+      "label": "sân thượng",
+      "hits": 355,
+      "rate": 0.05658272234619063
+    },
+    {
+      "feature": "kw_phan_lo",
+      "category": "access",
+      "label": "khu phân lô",
+      "hits": 323,
+      "rate": 0.05148230793751992
+    },
+    {
+      "feature": "kw_ngo_thong",
+      "category": "access",
+      "label": "ngõ thông",
+      "hits": 311,
+      "rate": 0.049569652534268406
+    },
+    {
+      "feature": "kw_legal_risk",
+      "category": "derived",
+      "label": "tranh_chap / quy_hoach / dang_cho_so",
+      "hits": 300,
+      "rate": 0.047816385081287854
+    },
+    {
+      "feature": "kw_hem_xe_hoi",
+      "category": "access",
+      "label": "hẻm xe hơi",
+      "hits": 291,
+      "rate": 0.04638189352884922
+    },
+    {
+      "feature": "kw_quy_hoach",
+      "category": "legal",
+      "label": "(dính) quy hoạch",
+      "hits": 267,
+      "rate": 0.04255658272234619
+    },
+    {
+      "feature": "kw_noi_that_co_ban",
+      "category": "condition",
+      "label": "nội thất cơ bản",
+      "hits": 192,
+      "rate": 0.030602486452024225
+    },
+    {
+      "feature": "kw_o_to_do_cua",
+      "category": "access",
+      "label": "ô tô đỗ cửa / đỗ cổng",
+      "hits": 170,
+      "rate": 0.02709595154606312
+    },
+    {
+      "feature": "kw_hop_dong",
+      "category": "legal",
+      "label": "hợp đồng (mua bán)",
+      "hits": 167,
+      "rate": 0.02661778769525024
+    },
+    {
+      "feature": "kw_nha_cap_4",
+      "category": "condition",
+      "label": "nhà cấp 4",
+      "hits": 167,
+      "rate": 0.02661778769525024
+    },
+    {
+      "feature": "kw_hai_mat_thoang",
+      "category": "access",
+      "label": "2 mặt thoáng",
+      "hits": 110,
+      "rate": 0.017532674529805548
+    },
+    {
+      "feature": "kw_xe_hoi_vao_nha",
+      "category": "access",
+      "label": "xe hơi vào nhà",
+      "hits": 101,
+      "rate": 0.016098182977366912
+    },
+    {
+      "feature": "kw_khong_quy_hoach",
+      "category": "legal",
+      "label": "không quy hoạch / không tranh chấp",
+      "hits": 95,
+      "rate": 0.015141855275741155
+    },
+    {
+      "feature": "kw_tang_ham",
+      "category": "condition",
+      "label": "tầng hầm / bán hầm",
+      "hits": 89,
+      "rate": 0.014185527574115397
+    },
+    {
+      "feature": "kw_nha_cu",
+      "category": "condition",
+      "label": "nhà cũ / xuống cấp",
+      "hits": 78,
+      "rate": 0.012432260121134842
+    },
+    {
+      "feature": "kw_ngo_ba_gac",
+      "category": "access",
+      "label": "ngõ ba gác",
+      "hits": 78,
+      "rate": 0.012432260121134842
+    },
+    {
+      "feature": "kw_giay_to",
+      "category": "legal",
+      "label": "giấy tờ (hợp lệ)",
+      "hits": 46,
+      "rate": 0.007331845712464138
+    },
+    {
+      "feature": "kw_dang_cho_so",
+      "category": "legal",
+      "label": "đang chờ sổ",
+      "hits": 29,
+      "rate": 0.0046222505578578255
+    },
+    {
+      "feature": "kw_tranh_chap",
+      "category": "legal",
+      "label": "tranh chấp",
+      "hits": 10,
+      "rate": 0.0015938795027095952
+    },
+    {
+      "feature": "kw_cho_thue",
+      "category": "intent",
+      "label": "cho thuê (tin thuê, không phải bán)",
+      "hits": 0,
+      "rate": 0.0
+    }
+  ],
+  "runtime_seconds": 1073.2
+}

@@ -545,7 +545,9 @@ def run_uplift_benchmark(
         }
 
     agreement = entity_agreement_report(train, train_text[entity_cols])
-    prevalence = keyword_extractor.prevalence(train_flags)
+    # Lexicon health is measured on the *raw* rows. `train_flags` is post-cleaning,
+    # where kw_cho_thue is zero by construction and would look like a dead rule.
+    prevalence = keyword_extractor.prevalence(raw_train_flags)
 
     return {
         "config": asdict(config),
@@ -564,6 +566,10 @@ def run_uplift_benchmark(
         "arms": results,
         "deltas_vs_tabular": deltas,
         "entity_agreement": agreement.to_dict(orient="records"),
+        "keyword_prevalence_basis": (
+            f"raw training rows before cleaning (n={len(raw_train_flags):,}); kw_cho_thue is "
+            "zero in the cleaned set by construction"
+        ),
         "keyword_prevalence": prevalence.to_dict(orient="records"),
         "runtime_seconds": round(time.time() - started, 1),
     }

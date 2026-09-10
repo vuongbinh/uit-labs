@@ -374,336 +374,337 @@
       "recovered_when_missing": 0
     }
   ],
+  "keyword_prevalence_basis": "raw training rows before cleaning (n=100,000); kw_cho_thue is zero in the cleaned set by construction",
   "keyword_prevalence": [
     {
       "feature": "kw_legal_clean",
       "category": "derived",
       "label": "phap_ly_ro_rang / so_do_hong / cong_chung",
-      "hits": 42584,
-      "rate": 0.546621482850688
+      "hits": 55756,
+      "rate": 0.55756
     },
     {
       "feature": "kw_legal_certificate",
       "category": "derived",
       "label": "so_do / so_hong",
-      "hits": 32692,
-      "rate": 0.4196446909016225
+      "hits": 43241,
+      "rate": 0.43241
     },
     {
       "feature": "kw_so_do_hong",
       "category": "legal",
       "label": "sổ đỏ / sổ hồng (either certificate)",
-      "hits": 32692,
-      "rate": 0.4196446909016225
+      "hits": 43241,
+      "rate": 0.43241
     },
     {
       "feature": "kw_mat_tien",
       "category": "access",
       "label": "mặt tiền",
-      "hits": 28421,
-      "rate": 0.36482080509344833
+      "hits": 38049,
+      "rate": 0.38049
     },
     {
       "feature": "kw_phap_ly",
       "category": "legal",
       "label": "pháp lý",
-      "hits": 26969,
-      "rate": 0.3461824810022592
+      "hits": 36298,
+      "rate": 0.36298
     },
     {
       "feature": "kw_chinh_chu",
       "category": "legal",
       "label": "chính chủ",
-      "hits": 24047,
-      "rate": 0.3086747792154447
+      "hits": 31864,
+      "rate": 0.31864
     },
     {
       "feature": "kw_o_to",
       "category": "access",
       "label": "ô tô (bất kỳ ngữ cảnh nào)",
-      "hits": 20840,
-      "rate": 0.26750872869172315
+      "hits": 26743,
+      "rate": 0.26743
     },
     {
       "feature": "kw_noi_that",
       "category": "condition",
       "label": "nội thất (bất kỳ)",
-      "hits": 20223,
-      "rate": 0.25958872458410354
+      "hits": 25737,
+      "rate": 0.25737
     },
     {
       "feature": "kw_furnished",
       "category": "derived",
       "label": "full_noi_that / noi_that",
-      "hits": 20223,
-      "rate": 0.25958872458410354
-    },
-    {
-      "feature": "kw_so_do",
-      "category": "legal",
-      "label": "sổ đỏ",
-      "hits": 18358,
-      "rate": 0.23564900390223864
+      "hits": 25737,
+      "rate": 0.25737
     },
     {
       "feature": "kw_kinh_doanh",
       "category": "intent",
       "label": "tiện kinh doanh",
-      "hits": 17216,
-      "rate": 0.22098993633189568
+      "hits": 25576,
+      "rate": 0.25576
+    },
+    {
+      "feature": "kw_so_do",
+      "category": "legal",
+      "label": "sổ đỏ",
+      "hits": 23895,
+      "rate": 0.23895
     },
     {
       "feature": "kw_phap_ly_ro_rang",
       "category": "legal",
       "label": "pháp lý rõ ràng / đầy đủ",
-      "hits": 16430,
-      "rate": 0.210900595604847
-    },
-    {
-      "feature": "kw_ban_gap",
-      "category": "intent",
-      "label": "bán gấp / bán nhanh",
-      "hits": 16251,
-      "rate": 0.20860289587184228
+      "hits": 21839,
+      "rate": 0.21839
     },
     {
       "feature": "kw_thuong_luong",
       "category": "intent",
       "label": "có thương lượng",
-      "hits": 15703,
-      "rate": 0.20156859724789483
+      "hits": 21014,
+      "rate": 0.21014
+    },
+    {
+      "feature": "kw_ban_gap",
+      "category": "intent",
+      "label": "bán gấp / bán nhanh",
+      "hits": 20884,
+      "rate": 0.20884
     },
     {
       "feature": "kw_so_hong",
       "category": "legal",
       "label": "sổ hồng",
-      "hits": 15190,
-      "rate": 0.1949835695214623
-    },
-    {
-      "feature": "kw_full_noi_that",
-      "category": "condition",
-      "label": "full nội thất / nội thất đầy đủ",
-      "hits": 12973,
-      "rate": 0.16652546724173342
-    },
-    {
-      "feature": "kw_gia_re",
-      "category": "intent",
-      "label": "giá rẻ / giá tốt",
-      "hits": 10337,
-      "rate": 0.1326889505031834
-    },
-    {
-      "feature": "kw_hem",
-      "category": "access",
-      "label": "hẻm",
-      "hits": 9026,
-      "rate": 0.11586054631341137
-    },
-    {
-      "feature": "kw_duong_rong",
-      "category": "access",
-      "label": "đường rộng / đường lớn",
-      "hits": 8731,
-      "rate": 0.11207383446292873
-    },
-    {
-      "feature": "kw_lo_goc",
-      "category": "access",
-      "label": "lô góc / căn góc",
-      "hits": 7641,
-      "rate": 0.0980822550831793
-    },
-    {
-      "feature": "kw_nha_moi",
-      "category": "condition",
-      "label": "nhà mới / xây mới",
-      "hits": 7527,
-      "rate": 0.09661891558841651
-    },
-    {
-      "feature": "kw_road_car_access",
-      "category": "derived",
-      "label": "o_to_do_cua / xe_hoi_vao_nha / hem_xe_hoi",
-      "hits": 6896,
-      "rate": 0.08851920312179092
-    },
-    {
-      "feature": "kw_cong_chung",
-      "category": "legal",
-      "label": "công chứng",
-      "hits": 6666,
-      "rate": 0.08556685150955022
-    },
-    {
-      "feature": "kw_xe_hoi",
-      "category": "access",
-      "label": "xe hơi",
-      "hits": 6350,
-      "rate": 0.08151057712055863
-    },
-    {
-      "feature": "kw_thang_may",
-      "category": "condition",
-      "label": "thang máy",
-      "hits": 6286,
-      "rate": 0.08068905319367427
-    },
-    {
-      "feature": "kw_o_ngay",
-      "category": "condition",
-      "label": "vào ở ngay",
-      "hits": 5462,
-      "rate": 0.070111932635038
-    },
-    {
-      "feature": "kw_via_he",
-      "category": "access",
-      "label": "vỉa hè",
-      "hits": 4907,
-      "rate": 0.0629877798315876
-    },
-    {
-      "feature": "kw_san_thuong",
-      "category": "condition",
-      "label": "sân thượng",
-      "hits": 4842,
-      "rate": 0.06215341959334566
-    },
-    {
-      "feature": "kw_phan_lo",
-      "category": "access",
-      "label": "khu phân lô",
-      "hits": 4235,
-      "rate": 0.054361778599301705
-    },
-    {
-      "feature": "kw_ngo_thong",
-      "category": "access",
-      "label": "ngõ thông",
-      "hits": 4068,
-      "rate": 0.0522181146025878
-    },
-    {
-      "feature": "kw_legal_risk",
-      "category": "derived",
-      "label": "tranh_chap / quy_hoach / dang_cho_so",
-      "hits": 3865,
-      "rate": 0.049612343397001435
-    },
-    {
-      "feature": "kw_hem_xe_hoi",
-      "category": "access",
-      "label": "hẻm xe hơi",
-      "hits": 3722,
-      "rate": 0.04777675087286917
-    },
-    {
-      "feature": "kw_quy_hoach",
-      "category": "legal",
-      "label": "(dính) quy hoạch",
-      "hits": 3517,
-      "rate": 0.04514530704456767
-    },
-    {
-      "feature": "kw_hop_dong",
-      "category": "legal",
-      "label": "hợp đồng (mua bán)",
-      "hits": 2230,
-      "rate": 0.028624974327377286
-    },
-    {
-      "feature": "kw_noi_that_co_ban",
-      "category": "condition",
-      "label": "nội thất cơ bản",
-      "hits": 2178,
-      "rate": 0.027957486136783734
-    },
-    {
-      "feature": "kw_o_to_do_cua",
-      "category": "access",
-      "label": "ô tô đỗ cửa / đỗ cổng",
-      "hits": 2084,
-      "rate": 0.026750872869172316
-    },
-    {
-      "feature": "kw_nha_cap_4",
-      "category": "condition",
-      "label": "nhà cấp 4",
-      "hits": 1800,
-      "rate": 0.02310536044362292
-    },
-    {
-      "feature": "kw_xe_hoi_vao_nha",
-      "category": "access",
-      "label": "xe hơi vào nhà",
-      "hits": 1403,
-      "rate": 0.01800934483466831
-    },
-    {
-      "feature": "kw_hai_mat_thoang",
-      "category": "access",
-      "label": "2 mặt thoáng",
-      "hits": 1339,
-      "rate": 0.017187820907783938
-    },
-    {
-      "feature": "kw_khong_quy_hoach",
-      "category": "legal",
-      "label": "không quy hoạch / không tranh chấp",
-      "hits": 1212,
-      "rate": 0.015557609365372767
-    },
-    {
-      "feature": "kw_nha_cu",
-      "category": "condition",
-      "label": "nhà cũ / xuống cấp",
-      "hits": 1100,
-      "rate": 0.014119942493325119
-    },
-    {
-      "feature": "kw_tang_ham",
-      "category": "condition",
-      "label": "tầng hầm / bán hầm",
-      "hits": 1082,
-      "rate": 0.013888888888888888
-    },
-    {
-      "feature": "kw_ngo_ba_gac",
-      "category": "access",
-      "label": "ngõ ba gác",
-      "hits": 942,
-      "rate": 0.012091805298829328
-    },
-    {
-      "feature": "kw_giay_to",
-      "category": "legal",
-      "label": "giấy tờ (hợp lệ)",
-      "hits": 759,
-      "rate": 0.009742760320394332
-    },
-    {
-      "feature": "kw_dang_cho_so",
-      "category": "legal",
-      "label": "đang chờ sổ",
-      "hits": 323,
-      "rate": 0.004146128568494558
-    },
-    {
-      "feature": "kw_tranh_chap",
-      "category": "legal",
-      "label": "tranh chấp",
-      "hits": 73,
-      "rate": 0.0009370507291024851
+      "hits": 20394,
+      "rate": 0.20394
     },
     {
       "feature": "kw_cho_thue",
       "category": "intent",
       "label": "cho thuê (tin thuê, không phải bán)",
-      "hits": 0,
-      "rate": 0.0
+      "hits": 18760,
+      "rate": 0.1876
+    },
+    {
+      "feature": "kw_full_noi_that",
+      "category": "condition",
+      "label": "full nội thất / nội thất đầy đủ",
+      "hits": 16568,
+      "rate": 0.16568
+    },
+    {
+      "feature": "kw_gia_re",
+      "category": "intent",
+      "label": "giá rẻ / giá tốt",
+      "hits": 13974,
+      "rate": 0.13974
+    },
+    {
+      "feature": "kw_hem",
+      "category": "access",
+      "label": "hẻm",
+      "hits": 12286,
+      "rate": 0.12286
+    },
+    {
+      "feature": "kw_duong_rong",
+      "category": "access",
+      "label": "đường rộng / đường lớn",
+      "hits": 11332,
+      "rate": 0.11332
+    },
+    {
+      "feature": "kw_lo_goc",
+      "category": "access",
+      "label": "lô góc / căn góc",
+      "hits": 9912,
+      "rate": 0.09912
+    },
+    {
+      "feature": "kw_nha_moi",
+      "category": "condition",
+      "label": "nhà mới / xây mới",
+      "hits": 9908,
+      "rate": 0.09908
+    },
+    {
+      "feature": "kw_cong_chung",
+      "category": "legal",
+      "label": "công chứng",
+      "hits": 9308,
+      "rate": 0.09308
+    },
+    {
+      "feature": "kw_road_car_access",
+      "category": "derived",
+      "label": "o_to_do_cua / xe_hoi_vao_nha / hem_xe_hoi",
+      "hits": 9231,
+      "rate": 0.09231
+    },
+    {
+      "feature": "kw_thang_may",
+      "category": "condition",
+      "label": "thang máy",
+      "hits": 9084,
+      "rate": 0.09084
+    },
+    {
+      "feature": "kw_xe_hoi",
+      "category": "access",
+      "label": "xe hơi",
+      "hits": 8478,
+      "rate": 0.08478
+    },
+    {
+      "feature": "kw_o_ngay",
+      "category": "condition",
+      "label": "vào ở ngay",
+      "hits": 7163,
+      "rate": 0.07163
+    },
+    {
+      "feature": "kw_via_he",
+      "category": "access",
+      "label": "vỉa hè",
+      "hits": 6875,
+      "rate": 0.06875
+    },
+    {
+      "feature": "kw_san_thuong",
+      "category": "condition",
+      "label": "sân thượng",
+      "hits": 6671,
+      "rate": 0.06671
+    },
+    {
+      "feature": "kw_phan_lo",
+      "category": "access",
+      "label": "khu phân lô",
+      "hits": 5431,
+      "rate": 0.05431
+    },
+    {
+      "feature": "kw_ngo_thong",
+      "category": "access",
+      "label": "ngõ thông",
+      "hits": 5413,
+      "rate": 0.05413
+    },
+    {
+      "feature": "kw_hem_xe_hoi",
+      "category": "access",
+      "label": "hẻm xe hơi",
+      "hits": 5204,
+      "rate": 0.05204
+    },
+    {
+      "feature": "kw_legal_risk",
+      "category": "derived",
+      "label": "tranh_chap / quy_hoach / dang_cho_so",
+      "hits": 5045,
+      "rate": 0.05045
+    },
+    {
+      "feature": "kw_quy_hoach",
+      "category": "legal",
+      "label": "(dính) quy hoạch",
+      "hits": 4604,
+      "rate": 0.04604
+    },
+    {
+      "feature": "kw_hop_dong",
+      "category": "legal",
+      "label": "hợp đồng (mua bán)",
+      "hits": 3540,
+      "rate": 0.0354
+    },
+    {
+      "feature": "kw_noi_that_co_ban",
+      "category": "condition",
+      "label": "nội thất cơ bản",
+      "hits": 2769,
+      "rate": 0.02769
+    },
+    {
+      "feature": "kw_nha_cap_4",
+      "category": "condition",
+      "label": "nhà cấp 4",
+      "hits": 2692,
+      "rate": 0.02692
+    },
+    {
+      "feature": "kw_o_to_do_cua",
+      "category": "access",
+      "label": "ô tô đỗ cửa / đỗ cổng",
+      "hits": 2611,
+      "rate": 0.02611
+    },
+    {
+      "feature": "kw_hai_mat_thoang",
+      "category": "access",
+      "label": "2 mặt thoáng",
+      "hits": 1958,
+      "rate": 0.01958
+    },
+    {
+      "feature": "kw_xe_hoi_vao_nha",
+      "category": "access",
+      "label": "xe hơi vào nhà",
+      "hits": 1849,
+      "rate": 0.01849
+    },
+    {
+      "feature": "kw_tang_ham",
+      "category": "condition",
+      "label": "tầng hầm / bán hầm",
+      "hits": 1631,
+      "rate": 0.01631
+    },
+    {
+      "feature": "kw_khong_quy_hoach",
+      "category": "legal",
+      "label": "không quy hoạch / không tranh chấp",
+      "hits": 1601,
+      "rate": 0.01601
+    },
+    {
+      "feature": "kw_nha_cu",
+      "category": "condition",
+      "label": "nhà cũ / xuống cấp",
+      "hits": 1492,
+      "rate": 0.01492
+    },
+    {
+      "feature": "kw_ngo_ba_gac",
+      "category": "access",
+      "label": "ngõ ba gác",
+      "hits": 1229,
+      "rate": 0.01229
+    },
+    {
+      "feature": "kw_giay_to",
+      "category": "legal",
+      "label": "giấy tờ (hợp lệ)",
+      "hits": 1079,
+      "rate": 0.01079
+    },
+    {
+      "feature": "kw_dang_cho_so",
+      "category": "legal",
+      "label": "đang chờ sổ",
+      "hits": 414,
+      "rate": 0.00414
+    },
+    {
+      "feature": "kw_tranh_chap",
+      "category": "legal",
+      "label": "tranh chấp",
+      "hits": 91,
+      "rate": 0.00091
     }
   ],
-  "runtime_seconds": 480.2
+  "runtime_seconds": 638.2
 }

@@ -174,7 +174,132 @@ Verified on the published shards; each one changes how the target should be mode
 
 ---
 
-## 6. Integration contract for the baseline pipeline
+## 6. Benchmark results
+
+Every number below is **out-of-time**: training rows come from `shard_0000`
+(2025-06-01 → 2025-07-30) and test rows from `shard_0009`
+(2026-03-01 → 2026-03-30). Primary metric is RMSLE (lower is better). Raw JSON
+and markdown reports are committed under `reports/text_features/`.
+
+### 6.1 Marginal uplift ladder — 77,904 train / 29,794 test rows, 2 seeds
+
+Each arm is a strict superset of the one above it, so every row is a marginal gain.
+
+| arm | features | RMSLE | seed std | MAPE % | MAE (tỷ) | MedAE (tỷ) | R² |
+|---|---|---|---|---|---|---|---|
+| tabular | 23 | 0.4511 | 0.0003 | 31.47 | 7.317 | 1.416 | 0.0453 |
+| + keywords | 70 | 0.4345 | 0.0007 | 30.10 | 7.108 | 1.353 | 0.0488 |
+| + entities | 85 | 0.4287 | 0.0008 | 29.66 | 6.969 | 1.331 | 0.0508 |
+| + tfidf | 213 | **0.4119** | 0.0007 | **28.73** | 7.013 | 1.344 | 0.0456 |
+
+**Cumulative gain over tabular-only: −0.0392 RMSLE (−8.69%) and −2.74 MAPE points.**
+
+Seed spread is at most 0.0008 RMSLE on every arm, so each step is 20–50× the
+seed-to-seed noise; the ordering is not a sampling artifact.
+
+Two caveats worth stating plainly:
+
+- TF-IDF improves the log-scale objective (RMSLE −0.0168 over entities, MAPE
+  −0.93 pts) while raw-scale MAE and R² stay flat. It sharpens *relative*
+  accuracy across the price range; it does not fix the absolute error on the
+  most expensive listings.
+- R² on raw VND is near zero for **every** arm including the baseline. That is
+  the outlier tail (max recorded price > 800 trillion VND) dominating variance,
+  not a modelling failure — see §9.
+
+### 6.2 TF-IDF analyzer — matched scale, 46,815 train / 18,624 test rows
+
+All three modes share an identical tabular baseline (RMSLE 0.4618, MAPE 33.01%),
+so the deltas are directly comparable.
+
+| analyzer | features | RMSLE | Δ RMSLE | MAPE % | Δ MAPE | SVD expl. var |
+|---|---|---|---|---|---|---|
+| `word` (1,2)-grams | 213 | **0.4193** | **−0.0426 (−9.22%)** | **29.81** | **−3.20** | 0.133 |
+| `char_wb` (3,5)-grams | 213 | 0.4270 | −0.0349 (−7.55%) | 30.63 | −2.38 | 0.232 |
+| `both` | 341 | 0.4219 | −0.0399 (−8.64%) | 30.10 | −2.91 | 0.365 |
+
+**Word bigrams win**, and concatenating the character view does not beat them
+despite 60% more features. The character view explains more variance per
+component (0.232 vs 0.133), but that variance is less useful for price. The
+default is `word`; `char` remains available as a robustness option for
+teencode-heavy sources.
+
+### 6.3 PhoBERT — 6,274 train / 2,975 test rows
+
+| arm | features | RMSLE | MAPE % | MAE (tỷ) |
+|---|---|---|---|---|
+| tabular | 23 | 0.5539 | 42.52 | 9.556 |
+| + tfidf | 213 | 0.5267 | 37.71 | 9.446 |
+| + phobert | 277 | 0.5246 | 38.18 | 9.402 |
+
+Mean-pooled, unfine-tuned PhoBERT adds **−0.0022 RMSLE on top of TF-IDF and
+makes MAPE 0.47 points worse**, at ~18× the wall-clock (1,073 s vs ~60 s for the
+TF-IDF arm). Only 2 `phobert_*` components reach the top-25 by split gain
+(0.66% of total) against 7 `tfidf_*` components (11.43%).
+
+Conclusion: **TF-IDF is the right default.** PhoBERT is worth revisiting as a
+fine-tuned encoder or with embeddings cached once at scale — not as frozen
+pooled features on a few thousand listings. See §9.
+
+### 6.4 Entity extraction quality — validated against the structured columns
+
+Where a parsed entity and the recorded value both exist, do they agree?
+Measured on the 77,904 training rows.
+
+| structured column | text entity | text coverage | column missing | overlap | agreement | cells recovered |
+|---|---|---|---|---|---|---|
+| area | `text_area_m2` | 0.789 | 0.000 | 61,462 | 0.924 | 0 |
+| frontage_width | `text_frontage_m` | 0.296 | 0.457 | 15,894 | 0.883 | 7,169 |
+| house_depth | `text_depth_m` | 0.296 | 0.964 | 1,461 | 0.952 | **21,608** |
+| floor_count | `text_floor_count` | 0.372 | 0.838 | 8,776 | 0.919 | **20,234** |
+| bedroom_count | `text_bedroom_count` | 0.388 | 0.491 | 27,121 | 0.887 | 3,114 |
+| bathroom_count | `text_bathroom_count` | 0.255 | 0.526 | 17,964 | 0.935 | 1,936 |
+| road_width | `text_road_width_m` | 0.085 | 0.890 | 1,209 | 0.845 | 5,424 |
+| price *(excluded from features)* | `text_price_vnd` | 0.836 | 0.000 | 65,113 | 0.749 | 0 |
+
+85–95% agreement on the physical attributes, against columns that are 46–96%
+null in the source. `house_depth`, `floor_count` and `road_width` gain 21,608,
+20,234 and 5,424 previously-empty cells respectively. That **recovery** — not
+the raw entity values — is where most of the entity arm's gain comes from.
+
+`text_price_vnd` agrees on only ~75%, consistent with price ranges, per-m²
+quotes and multi-unit listings; it is excluded from model features regardless (§4).
+
+### 6.5 Lexicon coverage — measured on 100,000 raw training rows
+
+Prevalence is reported on rows **before** cleaning, so `kw_cho_thue` reflects the
+real rental share rather than the zero it would show post-filter. **No rule is
+dead** — all 47 fire on real data, and the test suite fails any pattern that
+could never match folded text.
+
+| concept | flag | hits | rate |
+|---|---|---|---|
+| sổ đỏ | `kw_so_do` | 23,895 | 23.89% |
+| sổ hồng | `kw_so_hong` | 20,394 | 20.39% |
+| chính chủ | `kw_chinh_chu` | 31,864 | 31.86% |
+| pháp lý rõ ràng / đầy đủ | `kw_phap_ly_ro_rang` | 21,839 | 21.84% |
+| đang chờ sổ | `kw_dang_cho_so` | 414 | 0.41% |
+| mặt tiền | `kw_mat_tien` | 38,049 | 38.05% |
+| ô tô đỗ cửa / cổng | `kw_o_to_do_cua` | 2,611 | 2.61% |
+| ngõ thông | `kw_ngo_thong` | 5,413 | 5.41% |
+| xe hơi vào nhà | `kw_xe_hoi_vao_nha` | 1,849 | 1.85% |
+| ngõ ba gác | `kw_ngo_ba_gac` | 1,229 | 1.23% |
+| full nội thất | `kw_full_noi_that` | 16,568 | 16.57% |
+| nội thất cơ bản | `kw_noi_that_co_ban` | 2,769 | 2.77% |
+| nhà mới / xây mới | `kw_nha_moi` | 9,908 | 9.91% |
+| nhà cấp 4 | `kw_nha_cap_4` | 2,692 | 2.69% |
+| *cho thuê (rental)* | `kw_cho_thue` | 18,760 | **18.76%** |
+| certificate (derived) | `kw_legal_certificate` | 43,241 | 43.24% |
+| car access (derived) | `kw_road_car_access` | 9,231 | 9.23% |
+| legal risk (derived) | `kw_legal_risk` | 5,045 | 5.04% |
+
+The two rare required phrases — `đang chờ sổ` (0.41%) and `ngõ ba gác` (1.23%) —
+are genuinely rare in the corpus rather than badly matched; both are verified
+against synthetic listings in `tests/text_features/test_keywords.py`.
+
+---
+
+## 7. Integration contract for the baseline pipeline
 
 The reference tabular block in `benchmark.py` exists so text features can be
 measured before the project baseline lands. It is **not** the project baseline —
@@ -223,7 +348,7 @@ supersede these — they are intentionally thin.
 
 ---
 
-## 7. Reproducing
+## 8. Reproducing
 
 ```bash
 uv sync                                    # or: uv pip install -e ".[dev]"
@@ -241,17 +366,27 @@ uv run pytest            # 173 tests
 
 ---
 
-## 8. Limitations and next steps
+## 9. Limitations and next steps
 
 - The keyword lexicon is hand-built from observed prevalence, not learned. It
   covers the required concepts well but will miss paraphrase; a phrase-mining
   pass over high-error residuals is the obvious extension.
 - `text_price_vnd` agrees with the structured `price` on only ~75% of rows
-  (5% tolerance), versus 88–95% for the physical attributes. Likely causes are
+  (5% tolerance), versus 85–95% for the physical attributes. Likely causes are
   price ranges, per-m² quotes and multi-unit listings; it needs work before it
   can be trusted for the null-price repair use case.
-- PhoBERT is mean-pooled with no fine-tuning, at a subsample size set by CPU
-  throughput. A fine-tuned encoder, or embeddings cached once at full scale,
-  would be the fair next comparison.
-- Only two shards are used. A multi-fold walk-forward across all ten would give
-  tighter error bars on the marginal gains.
+- **PhoBERT was measured and lost** (§6.3): as frozen mean-pooled features it adds
+  −0.0022 RMSLE over TF-IDF and worsens MAPE, for ~18× the compute. This is a
+  statement about *pooled, unfine-tuned* embeddings on ~6k listings — not about
+  PhoBERT in general. A fine-tuned encoder, or embeddings cached once and reused,
+  is the fair next comparison; do not pay for pooled PhoBERT by default.
+- The TF-IDF representation is capacity-limited, not saturated: `max_features`
+  hits its 60,000 cap and 128 SVD components explain only ~13% of word-view
+  variance. More components or a larger vocabulary is untested headroom.
+- Only two of the ten shards are used. A walk-forward across all ten would give
+  tighter error bars and would test whether the text gain holds as the market
+  moves further from the training window.
+- Raw-scale R² is near zero for every arm *including* the tabular baseline,
+  because the price variance is dominated by an outlier tail past 800 trillion
+  VND. RMSLE and MAPE are the metrics that carry information here; reporting R²
+  alone would misdescribe this dataset.
