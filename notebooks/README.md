@@ -25,15 +25,17 @@ and residuals.
 
 Text feature extraction from the `name` / `description` fields of the same
 dataset, and an out-of-time measurement of what those features add to a tabular
-price baseline. Companion to `vietnam_real_estate_baseline.ipynb`; the code lives
-in `real_estate/text/` and the design notes in
-`docs/real_estate_text_features.md`.
+price baseline. Companion to `vietnam_real_estate_baseline.ipynb`. The notebook
+is **standalone**: `_build_text_features_notebook.py` inlines the reachable
+subset of `real_estate/text/` verbatim into the "Bundled library" cells, so no
+project checkout is needed. The canonical source still lives in
+`real_estate/text/`, with design notes in `docs/real_estate_text_features.md` —
+edit the modules there and regenerate, never the notebook cells.
 
 **Run on Colab:** open the file and `Runtime → Run all`. The first cell installs
-`lightgbm scikit-learn pandas pyarrow numpy` and clones the repo at `REF` — set
-`REF` to any branch containing `real_estate/text`. Defaults to 60k train / 25k
-test rows so it finishes on the free CPU tier; the PhoBERT cell is opt-in and
-needs `torch` + `transformers`.
+`lightgbm scikit-learn pandas pyarrow numpy`; the next four define the bundled
+library. Defaults to 60k train / 25k test rows so it finishes on the free CPU
+tier; the PhoBERT cell is opt-in and needs `torch` + `transformers`.
 
 Pipeline: load two shards (train `shard_0000` = 2025-06, test `shard_0009` =
 2026-03) → check the three data traps before modelling → extract 47 domain
