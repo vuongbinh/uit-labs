@@ -3,11 +3,57 @@
 Kept in the repo so the notebook can be regenerated / diffed as plain Python,
 matching notebooks/_build_notebook.py.
 Run:  python notebooks/_build_text_features_notebook.py
+
+The notebook is **standalone**: the "Bundled library" cells below inline the
+reachable subset of ``real_estate/text/`` verbatim (this script reads those
+modules at build time and strips only the package plumbing), so the notebook
+runs on a bare kernel with no project checkout and no ``real_estate`` import.
 """
 import json
+import re
 from pathlib import Path
 
+REPO = Path(__file__).resolve().parent.parent
+TEXT_PKG = REPO / "real_estate" / "text"
+
 cells = []
+
+
+def _strip_module(name: str) -> str:
+    """Load ``real_estate/text/<name>.py`` and remove only the package plumbing.
+
+    Dropped: the module docstring, ``from __future__`` imports, intra-package
+    relative imports (``from .x import ...``), ``__all__`` assignments and the
+    ``if __name__ == "__main__"`` block. Every definition is kept byte-for-byte
+    so the notebook and the package cannot drift.
+    """
+    src = (TEXT_PKG / f"{name}.py").read_text(encoding="utf-8")
+    # Drop the leading module docstring.
+    src = re.sub(r'\A\s*""".*?"""\n', "", src, count=1, flags=re.DOTALL)
+    # Drop the `if __name__ == "__main__":` block (to EOF).
+    src = re.sub(r"\nif __name__ == .__main__.:.*\Z", "\n", src, flags=re.DOTALL)
+    # Drop `__all__ = [ ... ]` (single- or multi-line).
+    src = re.sub(r"\n__all__\s*=\s*\[.*?\]\n", "\n", src, flags=re.DOTALL)
+    # Drop intra-package relative imports, parenthesised multi-line form first.
+    src = re.sub(r"^from \.\S* import \([^)]*\)\n", "", src, flags=re.MULTILINE | re.DOTALL)
+    src = re.sub(r"^from \.\S* import .*\n", "", src, flags=re.MULTILINE)
+    src = re.sub(r"^from __future__ import .*\n", "", src, flags=re.MULTILINE)
+    return src.strip("\n")
+
+
+def library_cell(cid: str, header: str, modules: list[str]) -> None:
+    """Emit one 'Bundled library' code cell concatenating several stripped modules."""
+    body = [
+        "from __future__ import annotations",
+        "",
+        f"# == Bundled library: {header} ==",
+        "# Copied verbatim from real_estate/text/ by notebooks/_build_text_features_notebook.py.",
+        "# Edit the source modules there, not here, then regenerate the notebook.",
+    ]
+    for module in modules:
+        body += ["", f"# ---- real_estate/text/{module}.py " + "-" * (58 - len(module)), ""]
+        body.append(_strip_module(module))
+    code(cid, "\n".join(body))
 
 
 def md(cid: str, text: str):
@@ -54,42 +100,39 @@ md("a2", r"""
 
 code("a3", r"""
 %pip install -q lightgbm scikit-learn pandas pyarrow numpy
-
-# Any ref containing real_estate/text works; the project branch is the default.
-REF = "real-estate/baseline"
-
-import os, subprocess, sys
-if not os.path.isdir("uit-labs"):
-    subprocess.run(["git", "clone", "-q", "-b", REF,
-                    "https://github.com/vuongbinh/uit-labs.git"], check=True)
-if os.path.abspath("uit-labs") not in sys.path:
-    sys.path.insert(0, os.path.abspath("uit-labs"))
 """)
+
+md("a3a", r"""
+### 0.1 Bundled library
+
+The four cells below inline the reachable subset of the project's
+`real_estate/text/` package — text normalisation, the domain lexicon, entity
+parsing, the TF-IDF / PhoBERT encoders, data loading and the uplift benchmark.
+They are copied **verbatim** from those modules by
+`notebooks/_build_text_features_notebook.py`, so this notebook runs on a bare
+kernel with no project checkout and nothing to `pip install` from Git. Run them
+once, top to bottom, then collapse the section.
+""")
+
+library_cell("a3b", "text normalisation, domain lexicon, keyword flags",
+             ["normalize", "lexicon", "keywords"])
+library_cell("a3c", "numeric entity parsing and dense text representations",
+             ["entities", "representation"])
+library_cell("a3d", "dataset loading / cleaning and the feature pipeline",
+             ["data", "pipeline"])
+library_cell("a3e", "marginal-uplift benchmark (reference tabular baseline + LightGBM)",
+             ["benchmark"])
 
 code("a4", r"""
 import numpy as np
 import pandas as pd
 
-from real_estate.text import (
-    ENTITY_COLUMNS,
-    KeywordExtractor,
-    TARGET_LEAKING_ENTITIES,
-    TextFeatureConfig,
-    TextFeaturePipeline,
-    TfidfTextEncoder,
-    clean_frame,
-    extract_entities,
-    load_shard_sample,
-    parse_vn_number,
-    prepare_for_tfidf,
-    time_span,
-)
-from real_estate.text.benchmark import (
-    BenchmarkConfig,
-    entity_agreement_report,
-    format_report,
-    run_uplift_benchmark,
-)
+# ENTITY_COLUMNS, TARGET_LEAKING_ENTITIES, KeywordExtractor, TextFeatureConfig,
+# TextFeaturePipeline, TfidfTextEncoder, clean_frame, extract_entities,
+# load_shard_sample, parse_vn_number, prepare_for_tfidf, time_span, resolve_shard,
+# NUMERIC_COLUMNS, impute_from_text, BenchmarkConfig, entity_agreement_report,
+# format_report, run_uplift_benchmark, TabularEncoder
+# are all defined by the "Bundled library" cells above.
 
 pd.set_option("display.width", 160)
 pd.set_option("display.max_columns", 60)
@@ -120,7 +163,6 @@ Each of these was verified on the published shards and each one changes how you 
 
 code("a8", r"""
 import pyarrow.parquet as pq
-from real_estate.text.data import resolve_shard
 
 schema = pq.ParquetFile(resolve_shard(TRAIN_SHARD, cache_dir=DATA_DIR)).schema_arrow
 print("1) `price` is declared float64 on the dataset card but stored as", schema.field("price").type)
@@ -333,8 +375,8 @@ Fit the pipeline on training rows only, transform both sides, and column-bind on
 """)
 
 code("d3", r"""
-from real_estate.text import NUMERIC_COLUMNS, impute_from_text
-from real_estate.text.benchmark import TabularEncoder
+# NUMERIC_COLUMNS, impute_from_text and TabularEncoder come from the bundled
+# library cells in section 0.1.
 
 # Clean with the EDA's Rule 1 bounds. No rental flag: kw_cho_thue marks a mention,
 # and the price floor is what actually excludes monthly-rate rental listings.
