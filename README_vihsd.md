@@ -81,6 +81,77 @@ keeps that table fixed and trains the encoder at ViSoBERT-comparable speed;
 `--optim adamw_bnb_8bit --gradient-checkpointing` (extra: `uv sync --extra bnb`)
 is the slower alternative that keeps every parameter trainable.
 
+## Persisting and Serving the Demo
+
+Training writes weights into the run's output directory, which on Colab or Kaggle is
+session-local disk and disappears with the session. The demo also needs Part 6's
+calibrated `HATE` threshold `t*`, which costs about an hour of cross-validation to
+compute. Reaching the demo therefore used to mean re-running everything above it.
+
+Part 7B of `notebooks/vihate_project_run_fnal.ipynb` closes that gap by writing one
+self-describing **demo bundle**:
+
+```
+demo_bundle/
+├── model/              weights + tokenizer, as save_pretrained() wrote them
+├── demo_config.json    labels, max_length, calibrated t*, training recipe, test metrics
+├── README.md           model card (this is what the Hub renders)
+└── demo_test_set.csv   optional batch-tab sample
+```
+
+Persisting `t*` alongside the weights is the load-bearing part: without it a
+training-free demo is impossible in principle, not merely inconvenient.
+`load_demo_config()` validates `schema_version` and every field's type, so a stale or
+hand-edited bundle fails at load time rather than mis-scoring text later. Part 7B also
+reloads its own copy and scores a line before the session ends, so a broken artifact
+is caught while the weights still exist.
+
+Serve it (extra: `uv sync --extra demo`):
+
+```bash
+uv run vihate demo --model outputs/demo_bundle        # a local bundle directory
+uv run vihate demo --model yourname/vihsd-visobert    # or a Hub repo id
+```
+
+Flags: `--share` (public tunnel, expires in about a week), `--host`, `--port`,
+`--device`, `--out-dir`. A cold start is one model download, cached after the first
+run — no training, no notebook. Part 8 of the notebook cold-starts the same way: in a
+fresh session, run just the config cell and Part 8, and set `DEMO_SOURCE` to the bundle
+directory or repo id.
+
+Publish it, for a URL that does not expire:
+
+```bash
+uv run vihate publish-model --bundle outputs/demo_bundle --repo yourname/vihsd-visobert
+uv run vihate publish-space --space yourname/vihsd-demo --model yourname/vihsd-visobert
+```
+
+Both need a Hugging Face **write** token (`hf auth login`). `publish-space` creates a
+Gradio Space whose generated `app.py` has the model repo id baked in, so there are no
+Space variables to configure; the free CPU tier is enough. `publish-model` deliberately
+excludes `demo_test_set.csv` — it is real ViHSD validation text containing slurs, and
+the weights are the part worth publishing (`--include-sample` overrides). Add
+`--private` to either command to keep it unlisted.
+
+The demo's maths match Part 8 of the notebook exactly, and
+`tests/test_notebook_contract.py` enforces that: it executes the real Part 7B and
+Part 8 cells against a fixture model and asserts they agree with `serve_demo`
+prediction-for-prediction, so the notebook's inline writer cannot drift away from the
+package's reader.
+
+One deliberate quirk. The threshold rule **appends** the moderation flag instead of
+overwriting the class, so a row can read `predicted_class = CLEAN` alongside
+`flagged_for_review = True`. That is Part 8's existing behaviour and it is *not* Part 6's
+`apply_hate_rule()`, which overwrites the prediction with `HATE` — so the demo's
+`predicted_class` column will not reconcile with the Part 7 table on flagged rows.
+`test_flag_does_not_change_predicted_class` pins it, making any change a decision
+rather than an accident.
+
+Only the final single transformer is persisted; the Part 6 ensembles and the classical
+TF-IDF baselines are not, because Part 8 never served them. A bundle is a snapshot, not
+a registry — re-running Part 7B overwrites it, so tag the Hub revision or keep the zip
+if you need to roll back.
+
 ## Outputs
 
 Each run writes:

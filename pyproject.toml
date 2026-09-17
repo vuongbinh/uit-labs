@@ -40,6 +40,16 @@ notebook = [
   "nbconvert>=7.16",
   "pandas>=2.2",
 ]
+# Optional: serve the persisted demo bundle (`vihate demo`) or publish it to the
+# Hub and a Gradio Space (`vihate publish-model` / `vihate publish-space`). Kept
+# separate from `notebook` because a training run needs neither, and a demo host
+# needs neither jupyterlab nor matplotlib. torch/transformers come from the main
+# dependencies; pandas is repeated here so `--extra demo` alone is enough.
+demo = [
+  "gradio>=5.50,<6",
+  "huggingface-hub>=0.36",
+  "pandas>=2.2",
+]
 
 [project.scripts]
 vihate = "vihate.cli:app"
@@ -77,7 +87,10 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["D", "INP001", "PLR2004", "S101"]
+# S106 matches any argument whose name merely contains "token". The demo fixtures pass
+# tokenizer special tokens (`unk_token=`, `pad_token=`, ...) and the publish tests pass
+# a stubbed Hugging Face write token to a fake API; neither is a real credential.
+"tests/**/*.py" = ["D", "INP001", "PLR2004", "S101", "S106"]
 # Typer commands legitimately expose one option per CLI flag, including
 # boolean `--flag/--no-flag` options.
 "src/vihate/cli.py" = ["FBT001", "FBT002", "PLR0913", "PLR0917"]

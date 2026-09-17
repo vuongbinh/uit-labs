@@ -7,8 +7,12 @@ import typer
 
 from vihate.classical import ClassicalConfig, run_classical_cv
 from vihate.data import load_vihsd_examples
+from vihate.publish import SPACE_DEFAULT_PORT, SPACE_DEFAULT_SDK_VERSION, SPACE_DEFAULT_TITLE
 from vihate.reporting import persist_fold_results
 from vihate.transformer_cv import TransformerConfig, run_transformer_cv
+
+# serve_demo and publish's heavy work are imported inside the commands below, so
+# `vihate --help` stays fast and works before the ML extras are installed.
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -67,6 +71,85 @@ def run(
                 out_dir,
             )
     persist_fold_results(out_dir, fold_results)
+
+
+@app.command()
+def demo(
+    model: Annotated[
+        str, typer.Option(help="Hub repo id or local demo bundle directory written by Part 7B.")
+    ],
+    host: Annotated[str, typer.Option()] = "127.0.0.1",
+    port: Annotated[
+        int, typer.Option(help="Mirrors serve_demo.DEFAULT_PORT.")
+    ] = SPACE_DEFAULT_PORT,
+    share: Annotated[
+        bool, typer.Option("--share/--no-share", help="Public tunnel URL; expires in about a week.")
+    ] = False,
+    device: Annotated[str | None, typer.Option(help="cuda | cpu (default: auto)")] = None,
+    out_dir: Annotated[
+        Path | None, typer.Option(help="Where batch CSV exports are written (default: a temp dir).")
+    ] = None,
+) -> None:
+    """Serve the Gradio demo from a persisted bundle -- no training, no notebook."""
+    from vihate.serve_demo import HateSpeechPredictor, ServeConfig, launch_app
+
+    predictor = HateSpeechPredictor(model, device=device, output_dir=out_dir)
+    typer.echo(
+        f"ready — {predictor.config.backbone} on {predictor.device}, "
+        f"labels {list(predictor.labels)}, t* {predictor.t_star:.3f}"
+    )
+    config = ServeConfig(
+        source=model, host=host, port=port, share=share, device=device, output_dir=out_dir
+    )
+    launch_app(predictor, config)
+
+
+@app.command(name="publish-model")
+def publish_model(
+    bundle: Annotated[Path, typer.Option(help="Demo bundle directory written by Part 7B.")],
+    repo: Annotated[str, typer.Option(help="Target repo id, e.g. yourname/vihsd-visobert.")],
+    private: Annotated[bool, typer.Option("--private/--public")] = False,
+    include_sample: Annotated[
+        bool,
+        typer.Option(
+            "--include-sample/--no-sample",
+            help="Also upload demo_test_set.csv (real ViHSD text containing slurs).",
+        ),
+    ] = False,
+    token: Annotated[
+        str | None, typer.Option(help="HF write token; defaults to the logged-in one.")
+    ] = None,
+) -> None:
+    """Upload a demo bundle to a Hugging Face model repo."""
+    from vihate.publish import push_bundle_to_hub
+
+    url = push_bundle_to_hub(
+        bundle, repo, private=private, include_sample=include_sample, token=token
+    )
+    typer.echo(f"pushed {bundle} -> {url}")
+
+
+@app.command(name="publish-space")
+def publish_space(
+    space: Annotated[str, typer.Option(help="Target space id, e.g. yourname/vihsd-demo.")],
+    model: Annotated[str, typer.Option(help="Model repo id the Space loads at startup.")],
+    title: Annotated[str, typer.Option()] = SPACE_DEFAULT_TITLE,
+    sdk_version: Annotated[str, typer.Option()] = SPACE_DEFAULT_SDK_VERSION,
+    app_port: Annotated[int, typer.Option()] = SPACE_DEFAULT_PORT,
+    private: Annotated[bool, typer.Option("--private/--public")] = False,
+    token: Annotated[
+        str | None, typer.Option(help="HF write token; defaults to the logged-in one.")
+    ] = None,
+) -> None:
+    """Create or update a Gradio Space that serves the published model."""
+    from vihate.publish import SpaceSpec, create_demo_space
+
+    spec = SpaceSpec(
+        title=title, sdk_version=sdk_version, app_port=app_port, private=private, token=token
+    )
+    url = create_demo_space(space, model, spec)
+    typer.echo(f"space files pushed -> {url}")
+    typer.echo("the Space builds on first push; watch its Build log, then use the App tab")
 
 
 if __name__ == "__main__":

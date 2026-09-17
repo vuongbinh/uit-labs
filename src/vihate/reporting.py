@@ -11,9 +11,9 @@ if TYPE_CHECKING:
 
 ScalarMap = Mapping[str, float]
 
-type JsonPayload = (
-    Mapping[str, "JsonPayload | float | int | str"] | Sequence["JsonPayload | float | int | str"]
-)
+type JsonScalar = bool | float | int | str | None
+type JsonValue = JsonPayload | JsonScalar
+type JsonPayload = Mapping[str, JsonValue] | Sequence[JsonValue]
 
 
 def write_json(path: Path, payload: JsonPayload) -> None:
