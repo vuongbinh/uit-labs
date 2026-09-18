@@ -15,13 +15,17 @@ Hugging Face Hub, easy to read, easy to extend, and deployable as a Gradio Space
 
 ## Layout
 ```
-app.py            Gradio UI only: two tabs, wires buttons to model.py
-model.py          load model once; predict(texts) -> list[dict[label, prob]]
-pyproject.toml    runtime deps (gradio, torch, transformers<5, sentencepiece, pandas) + dev extra
+app.py            entrypoint: loads the model, exposes `demo` (5 lines)
+ui.py             Gradio layout + handlers; takes a classifier, so tests pass a stub
+model.py          load model; Classifier.predict(texts) -> list[dict[label, prob]]
+batch.py          parse uploaded files, build result tables (no torch/Gradio)
+pyproject.toml    runtime deps + dev group; CPU-only torch index
 uv.lock
-README.md         HF Space front matter (sdk gradio, pinned sdk_version, python_version 3.12) + short description
-tests/            pure-function tests; no real model required
+README.md         HF Space front matter + run/deploy instructions
+tests/            no real model downloads
 ```
+
+`app.py` is split from `ui.py` because `gradio app.py` needs a module-level `demo`, which loads the model at import; keeping the UI in `ui.py` lets tests import it without loading a model.
 
 ## model.py
 - `MODEL_ID = os.environ.get("MODEL_ID", "bvuong/nlp-vihate")`; a local path also works
