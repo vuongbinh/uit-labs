@@ -4,7 +4,7 @@ import os
 from collections.abc import Sequence
 
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, PreTrainedTokenizerBase
 
 DEFAULT_MODEL_ID = "bvuong/nlp-vihate"
 # The checkpoint only stores LABEL_0..LABEL_2; this is the ViHSD class order.
@@ -46,7 +46,7 @@ class Classifier:
         return results
 
 
-def _load_tokenizer(model_id: str) -> "AutoTokenizer":
+def _load_tokenizer(model_id: str) -> PreTrainedTokenizerBase:
     """Prefer the slow tokenizer (what training used); fall back to the fast one."""
     try:
         return AutoTokenizer.from_pretrained(model_id, use_fast=False)
