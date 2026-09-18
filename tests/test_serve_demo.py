@@ -1,5 +1,6 @@
 """The demo server: threshold semantics, batch parity, CLI wiring, and a real HTTP boot."""
 
+import shutil
 import socket
 import urllib.request
 from pathlib import Path
@@ -7,10 +8,10 @@ from typing import cast
 
 import pandas as pd
 import pytest
-from conftest import BACKBONE, BENIGN_TEXTS, LABELS, MAX_LENGTH, T_STAR
+from conftest import BACKBONE, BENIGN_TEXTS, LABELS, MAX_LENGTH, T_STAR, make_tiny_model
 from typer.testing import CliRunner
 
-from vihate.demo_bundle import DemoBundleError
+from vihate.demo_bundle import DemoBundleError, write_demo_bundle
 from vihate.serve_demo import (
     FLAG_NOTE,
     HateSpeechPredictor,
@@ -18,6 +19,7 @@ from vihate.serve_demo import (
     build_app,
     launch_app,
     load_tokenizer,
+    verify_bundle,
 )
 
 runner = CliRunner()
@@ -336,3 +338,48 @@ def test_demo_command_accepts_share_and_out_dir(
     assert isinstance(config, ServeConfig)
     assert config.share is True
     assert config.output_dir == tmp_path
+
+
+# --------------------------------------------- bundle integrity caught at load time
+
+
+def two_label_bundle(tmp_path: Path) -> Path:
+    """A bundle whose model head has 2 labels while demo_config.json declares 3."""
+    from conftest import SPEC
+    from transformers import XLMRobertaConfig, XLMRobertaForSequenceClassification
+
+    model_dir = tmp_path / "two-label" / "model"
+    model_dir.mkdir(parents=True)
+    XLMRobertaForSequenceClassification(
+        XLMRobertaConfig(
+            vocab_size=20,
+            hidden_size=32,
+            num_hidden_layers=2,
+            num_attention_heads=4,
+            intermediate_size=64,
+            max_position_embeddings=140,
+            pad_token_id=0,
+            num_labels=2,
+        )
+    ).save_pretrained(model_dir)
+    with_tokenizer = make_tiny_model(tmp_path / "with-tokenizer")
+    for name in ("tokenizer.json", "tokenizer_config.json", "special_tokens_map.json"):
+        shutil.copyfile(with_tokenizer / name, model_dir / name)
+    return write_demo_bundle(tmp_path / "bundle", model_dir, SPEC)
+
+
+def test_head_label_mismatch_is_caught_at_load_not_mid_predict(tmp_path: Path) -> None:
+    """This used to load fine and then die at predict time with a bare KeyError."""
+    bundle = two_label_bundle(tmp_path)
+    with pytest.raises(DemoBundleError, match="model head has 2 labels"):
+        HateSpeechPredictor(bundle, device="cpu")
+
+
+def test_verify_bundle_passes_on_a_good_bundle(bundle_dir: Path) -> None:
+    config = verify_bundle(bundle_dir, device="cpu")
+    assert config.labels == LABELS
+
+
+def test_verify_bundle_rejects_a_mismatched_head(tmp_path: Path) -> None:
+    with pytest.raises(DemoBundleError, match="model head has 2 labels"):
+        verify_bundle(two_label_bundle(tmp_path), device="cpu")

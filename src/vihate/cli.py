@@ -122,7 +122,11 @@ def publish_model(
 ) -> None:
     """Upload a demo bundle to a Hugging Face model repo."""
     from vihate.publish import push_bundle_to_hub
+    from vihate.serve_demo import verify_bundle
 
+    # Load and score it first: a bundle that cannot serve must not reach the Hub,
+    # where the failure would only surface on someone else's machine.
+    verify_bundle(bundle)
     url = push_bundle_to_hub(
         bundle, repo, private=private, include_sample=include_sample, token=token
     )

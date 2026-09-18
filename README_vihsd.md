@@ -119,6 +119,25 @@ run — no training, no notebook. Part 8 of the notebook cold-starts the same wa
 fresh session, run just the config cell and Part 8, and set `DEMO_SOURCE` to the bundle
 directory or repo id.
 
+If you prefer the conventional Gradio entrypoint, the repo root has an `app.py`:
+
+```bash
+uv run gradio app.py                                # hot-reloading dev server
+uv run python app.py                                # plain launch
+DEMO_MODEL=you/vihsd-visobert uv run gradio app.py  # serve a Hub bundle
+```
+
+It exposes `demo` at module level, which is what `gradio app.py` resolves, and reads
+`DEMO_MODEL` (default `outputs/demo_bundle`), `DEMO_DEVICE`, `DEMO_HOST`, `DEMO_PORT`
+and `DEMO_SHARE` from the environment. `vihate demo` remains the richer entrypoint;
+`app.py` exists for the Gradio workflow and for hosts that expect that filename.
+
+Both paths load the bundle through `HateSpeechPredictor`, which now refuses a bundle
+whose model head label count disagrees with `demo_config.json` — that mismatch used to
+load fine and then die at predict time with a bare `KeyError`. `vihate publish-model`
+runs the same check (`serve_demo.verify_bundle`, which also scores one benign line)
+before uploading, so a bundle that cannot serve never reaches the Hub.
+
 Publish it, for a URL that does not expire:
 
 ```bash

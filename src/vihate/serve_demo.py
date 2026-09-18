@@ -22,18 +22,23 @@ import pandas as pd
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from vihate.demo_bundle import MODEL_DIRNAME, SAMPLE_NAME, resolve_bundle
+from vihate.demo_bundle import MODEL_DIRNAME, SAMPLE_NAME, DemoBundleError, resolve_bundle
 
 if TYPE_CHECKING:
     from gradio import Blocks
     from torch import Tensor
     from transformers import PreTrainedTokenizerBase
 
+    from vihate.demo_bundle import DemoConfig
+
 FLAG_NOTE: Final = "ưu tiên kiểm duyệt"
 TEXT_COLUMNS: Final = ("free_text", "text", "comment")
 TABLE_EXTENSIONS: Final = (".csv", ".tsv")
 EXPORT_NAME: Final = "demo_batch_predictions.csv"
 APP_TITLE: Final = "Vietnamese Hate Speech Detection"
+# Benign Vietnamese, used only to prove a bundle can actually score text.
+PROBE_TEXT: Final = "Hôm nay thời tiết rất đẹp"
+PROBE_SUM_TOLERANCE: Final = 1e-3
 DEFAULT_PORT: Final = 7860
 
 
@@ -85,6 +90,16 @@ class HateSpeechPredictor:
         self.tokenizer = load_tokenizer(model_dir)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_dir).to(self.device)
         self.model.eval()
+        head_labels = int(getattr(self.model.config, "num_labels", len(self.labels)))
+        if head_labels != len(self.labels):
+            # Without this the bundle loads fine and then dies at predict time with a
+            # bare KeyError on the last label, which says nothing about the real problem.
+            reason = (
+                f"model head has {head_labels} labels but demo_config.json declares "
+                f"{len(self.labels)} ({', '.join(self.labels)}); config.json and "
+                "demo_config.json disagree, so predictions would be mis-keyed"
+            )
+            raise DemoBundleError(reason, source=bundle_dir)
 
         fallback_dir = Path(tempfile.mkdtemp(prefix="vihsd-demo-"))
         self.output_dir = Path(output_dir) if output_dir else fallback_dir
@@ -157,6 +172,26 @@ class HateSpeechPredictor:
         out_path = self.output_dir / EXPORT_NAME
         result_table.to_csv(out_path, index=False, encoding="utf-8-sig")
         return result_table, str(out_path)
+
+
+def verify_bundle(source: str | Path, *, device: str | None = None) -> "DemoConfig":
+    """Load a bundle and score one benign line, proving the artifact can actually serve.
+
+    The same self-check Part 7B of the notebook runs before the session ends, offered
+    for bundles produced elsewhere. Catches the failures that only appear at predict
+    time -- a head whose label count disagrees with demo_config.json, a missing
+    tokenizer -- instead of letting them surface mid-demo or after a Hub upload.
+    """
+    predictor = HateSpeechPredictor(source, device=device)
+    _, scores = predictor.predict_detailed(PROBE_TEXT, threshold=1.01)
+    if set(scores) != set(predictor.labels):
+        reason = f"probe returned labels {sorted(scores)}, expected {sorted(predictor.labels)}"
+        raise DemoBundleError(reason, source=predictor.bundle_dir)
+    total = sum(scores.values())
+    if abs(total - 1.0) > PROBE_SUM_TOLERANCE:
+        reason = f"probe probabilities sum to {total:.4f}, expected 1.0"
+        raise DemoBundleError(reason, source=predictor.bundle_dir)
+    return predictor.config
 
 
 def build_app(predictor: HateSpeechPredictor) -> "Blocks":

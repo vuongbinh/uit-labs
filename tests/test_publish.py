@@ -277,3 +277,29 @@ def test_bundle_metadata_is_not_reported_by_the_helper_anymore(
     url = publish.push_bundle_to_hub(bundle_dir, "someone/vihsd-visobert")
     assert "\n" not in url
     assert fake_api.created  # the stub answered, not the network
+
+
+def test_publish_model_verifies_the_bundle_before_pushing(
+    bundle_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A bundle that cannot serve must not reach the Hub."""
+    from vihate import serve_demo
+    from vihate.cli import app
+
+    pushed: list[object] = []
+
+    def refuse(source: object) -> object:
+        message = "probe failed"
+        raise DemoBundleError(message, source=str(source))
+
+    def record_push(*args: object, **_kwargs: object) -> str:
+        pushed.append(args)
+        return "https://huggingface.co/x/y"
+
+    monkeypatch.setattr(serve_demo, "verify_bundle", refuse)
+    monkeypatch.setattr(publish, "push_bundle_to_hub", record_push)
+    result = runner.invoke(
+        app, ["publish-model", "--bundle", str(bundle_dir), "--repo", "x/y"]
+    )
+    assert result.exit_code != 0
+    assert pushed == []
