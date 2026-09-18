@@ -51,7 +51,8 @@ tests/            no real model downloads
 ## Deployment
 - README front matter: `sdk: gradio`, `sdk_version` pinned to the tested Gradio version,
   `python_version: 3.12`, `app_file: app.py`.
-- Deploy step: `uv export --no-hashes --no-dev -o requirements.txt`, then push to the Space.
+- Deploy step: `{ echo "--extra-index-url https://download.pytorch.org/whl/cpu"; uv export --no-hashes --no-dev --no-emit-project; } > requirements.txt`, then push to the Space.
+  The `--extra-index-url` line points pip at the PyTorch CPU wheel index, because `uv export` omits the explicit index.
   Documented in the README; `requirements.txt` gitignored.
 - Public model: no token needed. First start downloads weights, then cached.
 

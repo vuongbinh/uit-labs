@@ -43,8 +43,10 @@ Gradio Spaces install only from `requirements.txt`, so generate it from the lock
 (it is gitignored and never edited by hand):
 
 ```bash
-uv export --no-hashes --no-dev -o requirements.txt
+{ echo "--extra-index-url https://download.pytorch.org/whl/cpu"; uv export --no-hashes --no-dev --no-emit-project; } > requirements.txt
 ```
+
+The first line points pip at the PyTorch CPU wheel index, because `uv export` omits the explicit index.
 
 Then push `app.py ui.py model.py batch.py requirements.txt README.md` to a Space with
 SDK **Gradio**. `bvuong/nlp-vihate` is public, so no token is needed; the first start
