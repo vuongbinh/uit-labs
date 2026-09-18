@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -40,6 +41,16 @@ def test_model_id_comes_from_environment(
 ) -> None:
     monkeypatch.setenv("MODEL_ID", str(tiny_model_dir))
     assert len(Classifier(device="cpu").predict(["xin chào"])) == 1
+
+
+def test_empty_model_id_falls_back_to_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    def stop(model_id: str) -> None:
+        raise LookupError(model_id)
+
+    monkeypatch.setenv("MODEL_ID", "")
+    monkeypatch.setattr("model._load_tokenizer", stop)
+    with pytest.raises(LookupError, match=re.escape(DEFAULT_MODEL_ID)):
+        Classifier(device="cpu")
 
 
 def test_default_model_id_is_the_published_repo() -> None:

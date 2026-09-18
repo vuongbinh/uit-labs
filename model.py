@@ -18,7 +18,7 @@ class Classifier:
 
     def __init__(self, model_id: str | None = None, device: str | None = None) -> None:
         """Load from `model_id`, else $MODEL_ID, else the published Hub repo (or a local path)."""
-        model_id = model_id or os.environ.get("MODEL_ID", DEFAULT_MODEL_ID)
+        model_id = model_id or os.environ.get("MODEL_ID") or DEFAULT_MODEL_ID
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self.tokenizer = _load_tokenizer(model_id)
         self.model = (

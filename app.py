@@ -10,4 +10,4 @@ from ui import build_demo
 demo = build_demo(Classifier())
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(max_file_size="10mb")

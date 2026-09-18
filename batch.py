@@ -32,7 +32,12 @@ def read_comments(path: str | Path) -> list[str]:
         else:
             message = f"Unsupported file type '{suffix}'. Upload a .txt, .csv or .tsv file."
             raise BatchFileError(message)
-    except (UnicodeDecodeError, pd.errors.ParserError, pd.errors.EmptyDataError) as exc:
+    except (
+        OSError,
+        UnicodeDecodeError,
+        pd.errors.ParserError,
+        pd.errors.EmptyDataError,
+    ) as exc:
         message = f"Could not read {path.name}: {exc}"
         raise BatchFileError(message) from exc
 

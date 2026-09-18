@@ -93,7 +93,7 @@ def build_demo(classifier: Predictor) -> gr.Blocks:
             gr.Markdown(
                 "Upload a `.txt` file (one comment per line) or a `.csv`/`.tsv` file with a "
                 "`free_text`, `text` or `comment` column. "
-                f"At most {MAX_ROWS} comments are analyzed."
+                f"At most {MAX_ROWS} comments are analyzed. Files up to 10 MB."
             )
             file_input = gr.File(label="Comments file", file_types=[".txt", ".csv", ".tsv"])
             batch_button = gr.Button("Analyze file", variant="primary")

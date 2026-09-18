@@ -48,7 +48,15 @@ Gradio Spaces install only from `requirements.txt`, so generate it from the lock
 
 The first line points pip at the PyTorch CPU wheel index, because `uv export` omits the explicit index.
 
-Then push `app.py ui.py model.py batch.py requirements.txt README.md` to a Space with
-SDK **Gradio**. `bvuong/nlp-vihate` is public, so no token is needed; the first start
-downloads the weights and later starts use the cache. The sdk version in the header above
+A Space is its own git repo, so copy the files into a clone of it and push from there:
+
+```bash
+git clone https://huggingface.co/spaces/<user>/<space>
+cp app.py ui.py model.py batch.py requirements.txt README.md <space-clone>/
+cd <space-clone> && git add -A && git commit -m "Update demo" && git push
+```
+
+`requirements.txt` is intentionally gitignored here, so never rely on pushing this repo directly.
+Create the Space with SDK **Gradio**. `bvuong/nlp-vihate` is public, so no token is needed; the
+first start downloads the weights and later starts use the cache. The sdk version in the header above
 must match the `gradio` version in `uv.lock`.

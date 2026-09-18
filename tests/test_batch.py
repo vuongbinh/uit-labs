@@ -82,3 +82,8 @@ def test_results_table_shape_and_rounding() -> None:
     assert table["predicted_class"].tolist() == ["HATE", "CLEAN"]
     assert table["P(CLEAN)"].tolist() == [0.1235, 0.9]
     assert isinstance(table, pd.DataFrame)
+
+
+def test_missing_file_is_a_batch_error(tmp_path: Path) -> None:
+    with pytest.raises(BatchFileError, match=r"missing\.txt"):
+        read_comments(tmp_path / "missing.txt")
