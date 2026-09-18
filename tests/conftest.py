@@ -17,9 +17,27 @@ BENIGN_TEXTS = (
 )
 
 _VOCAB = (
-    "[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]",
-    "hôm", "nay", "thời", "tiết", "đẹp", "xin", "chào", "bạn",
-    "tôi", "rất", "cảm", "ơn", "đội", "ngũ", "hỗ", "trợ",
+    "[PAD]",
+    "[UNK]",
+    "[CLS]",
+    "[SEP]",
+    "[MASK]",
+    "hôm",
+    "nay",
+    "thời",
+    "tiết",
+    "đẹp",
+    "xin",
+    "chào",
+    "bạn",
+    "tôi",
+    "rất",
+    "cảm",
+    "ơn",
+    "đội",
+    "ngũ",
+    "hỗ",
+    "trợ",
 )
 
 
