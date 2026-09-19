@@ -21,7 +21,7 @@ EXAMPLES = [
 DESCRIPTION = (
     f"# {TITLE}\n"
     "Classifies Vietnamese text as `CLEAN`, `OFFENSIVE` or `HATE` using "
-    "[bvuong/nlp-vihate](https://huggingface.co/bvuong/nlp-vihate).\n\n"
+    "[bvuong/visoBert-ensemble](https://huggingface.co/bvuong/visoBert-ensemble).\n\n"
     "**Content warning:** the model scores real social-media text, so examples and "
     "predictions can involve slurs. Predictions can be wrong; do not use them as the "
     "only basis for moderation decisions."

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Reduce the repo to a small Gradio demo that serves `bvuong/nlp-vihate` from the Hugging Face Hub and deploys as a Gradio Space.
+**Goal:** Reduce the repo to a small Gradio demo that serves `bvuong/visoBert-ensemble` from the Hugging Face Hub and deploys as a Gradio Space.
 
 **Architecture:** Four flat root modules with one job each: `model.py` (load + predict, no Gradio), `batch.py` (file parsing + result tables, no torch/Gradio), `ui.py` (Gradio layout and handlers, takes a classifier as an argument), `app.py` (5-line entrypoint that loads the real model and exposes `demo`). Tests exercise `model.py` with a tiny random-weight model and `ui.py`/`batch.py` with a stub classifier, so no test downloads anything.
 
@@ -14,7 +14,7 @@
 
 ## Global Constraints
 
-- Model id from env `MODEL_ID`, default `bvuong/nlp-vihate`; a local path also works. No bundle/fallback logic.
+- Model id from env `MODEL_ID`, default `bvuong/visoBert-ensemble`; a local path also works. No bundle/fallback logic.
 - Labels constant `("CLEAN", "OFFENSIVE", "HATE")`; `MAX_LENGTH = 160`; batch size 32; `MAX_ROWS = 500`.
 - No decision threshold `t*` and no "flagged for review" output.
 - `pyproject.toml` + `uv.lock` are the source of truth; `requirements.txt` is generated with `uv export --no-hashes --no-dev` at deploy time and is gitignored.
@@ -51,7 +51,7 @@ git rm -r -q src/vihate tests README_vihsd.md app.py \
 [project]
 name = "vihate-demo"
 version = "0.2.0"
-description = "Gradio demo for Vietnamese hate-speech detection (bvuong/nlp-vihate)."
+description = "Gradio demo for Vietnamese hate-speech detection (bvuong/visoBert-ensemble)."
 requires-python = ">=3.12"
 dependencies = [
   "gradio>=5.50,<6",
@@ -404,7 +404,7 @@ Fix any ruff findings before committing (the `noqa: TRY301` may be unnecessary; 
 **Interfaces:**
 - Consumes: `tests/conftest.py` (`tiny_model_dir`, `make_tiny_model`, `BENIGN_TEXTS`) from Task 1.
 - Produces:
-  - `DEFAULT_MODEL_ID = "bvuong/nlp-vihate"`, `LABELS: tuple[str, str, str]`, `MAX_LENGTH = 160`, `BATCH_SIZE = 32`
+  - `DEFAULT_MODEL_ID = "bvuong/visoBert-ensemble"`, `LABELS: tuple[str, str, str]`, `MAX_LENGTH = 160`, `BATCH_SIZE = 32`
   - `class Classifier`: `__init__(self, model_id: str | None = None, device: str | None = None)`; `predict(self, texts: Sequence[str], batch_size: int = BATCH_SIZE) -> list[dict[str, float]]`
   - Task 4 relies on `Classifier.predict` and `LABELS`.
 
@@ -456,7 +456,7 @@ def test_model_id_comes_from_environment(
 
 
 def test_default_model_id_is_the_published_repo() -> None:
-    assert DEFAULT_MODEL_ID == "bvuong/nlp-vihate"
+    assert DEFAULT_MODEL_ID == "bvuong/visoBert-ensemble"
 
 
 def test_wrong_head_size_is_rejected(tmp_path: Path) -> None:
@@ -481,7 +481,7 @@ from collections.abc import Sequence
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-DEFAULT_MODEL_ID = "bvuong/nlp-vihate"
+DEFAULT_MODEL_ID = "bvuong/visoBert-ensemble"
 # The checkpoint only stores LABEL_0..LABEL_2; this is the ViHSD class order.
 LABELS = ("CLEAN", "OFFENSIVE", "HATE")
 MAX_LENGTH = 160
@@ -550,7 +550,7 @@ Expected: two dicts with keys CLEAN/OFFENSIVE/HATE summing to about 1. Weights a
 ```bash
 uv run ruff check model.py tests && uv run ruff format model.py tests
 git add model.py tests/test_model.py
-git commit -m "feat: add Classifier that loads bvuong/nlp-vihate and scores text
+git commit -m "feat: add Classifier that loads bvuong/visoBert-ensemble and scores text
 
 Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ```
@@ -688,7 +688,7 @@ EXAMPLES = [
 DESCRIPTION = (
     f"# {TITLE}\n"
     "Classifies Vietnamese text as `CLEAN`, `OFFENSIVE` or `HATE` using "
-    "[bvuong/nlp-vihate](https://huggingface.co/bvuong/nlp-vihate).\n\n"
+    "[bvuong/visoBert-ensemble](https://huggingface.co/bvuong/visoBert-ensemble).\n\n"
     "**Content warning:** the model scores real social-media text, so examples and "
     "predictions can involve slurs. Predictions can be wrong; do not use them as the "
     "only basis for moderation decisions."
@@ -837,7 +837,7 @@ pinned: false
 
 # Vietnamese Hate Speech Detection
 
-Gradio demo for [`bvuong/nlp-vihate`](https://huggingface.co/bvuong/nlp-vihate): classifies
+Gradio demo for [`bvuong/visoBert-ensemble`](https://huggingface.co/bvuong/visoBert-ensemble): classifies
 Vietnamese text as `CLEAN`, `OFFENSIVE` or `HATE`, one comment at a time or from a
 `.txt`/`.csv`/`.tsv` file.
 
@@ -872,7 +872,7 @@ uv export --no-hashes --no-dev -o requirements.txt
 ```
 
 Then push `app.py ui.py model.py batch.py requirements.txt README.md` to a Space with
-SDK **Gradio**. `bvuong/nlp-vihate` is public, so no token is needed; the first start
+SDK **Gradio**. `bvuong/visoBert-ensemble` is public, so no token is needed; the first start
 downloads the weights and later starts use the cache. The sdk version in the header above
 must match the `gradio` version in `uv.lock`.
 ```

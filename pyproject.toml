@@ -1,7 +1,7 @@
 [project]
 name = "vihate-demo"
 version = "0.2.0"
-description = "Gradio demo for Vietnamese hate-speech detection (bvuong/nlp-vihate)."
+description = "Gradio demo for Vietnamese hate-speech detection (bvuong/visoBert-ensemble)."
 requires-python = ">=3.12"
 dependencies = [
   "gradio>=5.50,<6",

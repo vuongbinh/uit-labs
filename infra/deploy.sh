@@ -7,7 +7,7 @@ RESOURCE_GROUP="${RESOURCE_GROUP:-rg-vihate}"
 LOCATION="${LOCATION:-southeastasia}"
 NAME_PREFIX="${NAME_PREFIX:-vihate}"
 MIN_REPLICAS="${MIN_REPLICAS:-1}"
-MODEL_ID="${MODEL_ID:-bvuong/nlp-vihate}"
+MODEL_ID="${MODEL_ID:-bvuong/visoBert-ensemble}"
 IMAGE_TAG="${IMAGE_TAG:-$(date -u +%Y%m%d%H%M%S)}"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
