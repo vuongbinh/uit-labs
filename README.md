@@ -60,3 +60,34 @@ cd <space-clone> && git add -A && git commit -m "Update demo" && git push
 Create the Space with SDK **Gradio**. `bvuong/nlp-vihate` is public, so no token is needed; the
 first start downloads the weights and later starts use the cache. The sdk version in the header above
 must match the `gradio` version in `uv.lock`.
+
+## Deploy to Azure Container Apps
+
+The `Dockerfile` builds a CPU-only image with the model weights baked in, and `infra/` provisions
+everything else (Log Analytics, Container Registry, managed identity, Container Apps environment
+and app). Requires the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) and
+an Azure subscription; no local Docker is needed because the image is built in the registry.
+
+```bash
+az login
+infra/deploy.sh          # prints https://<app>.<region>.azurecontainerapps.io when done
+```
+
+Re-running the script builds a new image tag and rolls out a new revision. Settings are env vars:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `RESOURCE_GROUP` | `rg-vihate` | Resource group to create/use |
+| `LOCATION` | `southeastasia` | Azure region |
+| `NAME_PREFIX` | `vihate` | Prefix for resource names and the image repository |
+| `MIN_REPLICAS` | `1` | `0` scales to zero and saves money, but the first request after idle waits for the model to load |
+| `MODEL_ID` | `bvuong/nlp-vihate` | Checkpoint baked into the image |
+| `IMAGE_TAG` | UTC timestamp | Tag for this build |
+
+The app runs with 2 vCPU / 4 GiB (a smaller size runs out of memory loading the model) and scales
+to 3 replicas. The container starts offline (`HF_HUB_OFFLINE=1`), so `MODEL_ID` is fixed at build
+time; to serve another checkpoint, re-run the script with a different `MODEL_ID`.
+
+To try the image locally: `docker build -t vihate-demo . && docker run --rm -p 7860:7860 vihate-demo`.
+
+To delete everything: `az group delete --name rg-vihate`.
