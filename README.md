@@ -12,7 +12,7 @@ pinned: false
 
 # Vietnamese Hate Speech Detection
 
-Gradio demo for [`bvuong/visoBert-ensemble`](https://huggingface.co/bvuong/visoBert-ensemble): classifies
+Gradio demo for [`bvuong/nlp-vihate`](https://huggingface.co/bvuong/nlp-vihate): classifies
 Vietnamese text as `CLEAN`, `OFFENSIVE` or `HATE`, one comment at a time or from a
 `.txt`/`.csv`/`.tsv` file.
 
@@ -57,7 +57,7 @@ cd <space-clone> && git add -A && git commit -m "Update demo" && git push
 ```
 
 `requirements.txt` is intentionally gitignored here, so never rely on pushing this repo directly.
-Create the Space with SDK **Gradio**. `bvuong/visoBert-ensemble` is public, so no token is needed; the
+Create the Space with SDK **Gradio**. `bvuong/nlp-vihate` is public, so no token is needed; the
 first start downloads the weights and later starts use the cache. The sdk version in the header above
 must match the `gradio` version in `uv.lock`.
 
@@ -81,7 +81,7 @@ Re-running the script builds a new image tag and rolls out a new revision. Setti
 | `LOCATION` | `southeastasia` | Azure region |
 | `NAME_PREFIX` | `vihate` | Prefix for resource names and the image repository |
 | `MIN_REPLICAS` | `1` | `0` scales to zero and saves money, but the first request after idle waits for the model to load |
-| `MODEL_ID` | `bvuong/visoBert-ensemble` | Checkpoint baked into the image |
+| `MODEL_ID` | `bvuong/nlp-vihate` | Checkpoint baked into the image |
 | `IMAGE_TAG` | UTC timestamp | Tag for this build |
 
 The app runs with 2 vCPU / 4 GiB (a smaller size runs out of memory loading the model) and scales

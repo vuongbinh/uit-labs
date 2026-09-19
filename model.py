@@ -22,7 +22,7 @@ from transformers import (
     PreTrainedTokenizerBase,
 )
 
-DEFAULT_MODEL_ID = "bvuong/visoBert-ensemble"
+DEFAULT_MODEL_ID = "bvuong/nlp-vihate"
 # The checkpoint only stores LABEL_0..LABEL_2; this is the ViHSD class order.
 LABELS = ("CLEAN", "OFFENSIVE", "HATE")
 MAX_LENGTH = 160

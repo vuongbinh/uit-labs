@@ -1,7 +1,7 @@
 # Gradio demo refactor: design
 
 ## Goal
-Reduce the repo to a small Gradio demo that serves `bvuong/visoBert-ensemble` from the
+Reduce the repo to a small Gradio demo that serves `bvuong/nlp-vihate` from the
 Hugging Face Hub, easy to read, easy to extend, and deployable as a Gradio Space.
 
 ## Decisions
@@ -28,7 +28,7 @@ tests/            no real model downloads
 `app.py` is split from `ui.py` because `gradio app.py` needs a module-level `demo`, which loads the model at import; keeping the UI in `ui.py` lets tests import it without loading a model.
 
 ## model.py
-- `MODEL_ID = os.environ.get("MODEL_ID", "bvuong/visoBert-ensemble")`; a local path also works
+- `MODEL_ID = os.environ.get("MODEL_ID", "bvuong/nlp-vihate")`; a local path also works
   since `from_pretrained` accepts both. No bundle or fallback logic.
 - Loaded once at import: tokenizer + `AutoModelForSequenceClassification`, `.eval()`,
   CUDA if available else CPU.

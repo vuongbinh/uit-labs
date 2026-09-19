@@ -20,7 +20,7 @@
 
 - App code (`app.py`, `ui.py`, `model.py`, `batch.py`) is unchanged. Container binding comes from `GRADIO_SERVER_NAME=0.0.0.0` and `GRADIO_SERVER_PORT=7860` env vars.
 - Python 3.12; dependencies come from `uv.lock` via `uv sync --frozen --no-dev` (CPU torch index is already in `pyproject.toml`).
-- Model default `bvuong/visoBert-ensemble`, baked in at build time; runtime uses `HF_HUB_OFFLINE=1`.
+- Model default `bvuong/nlp-vihate`, baked in at build time; runtime uses `HF_HUB_OFFLINE=1`.
 - Container runs as a non-root user; port 7860; 2 vCPU / 4 GiB; max replicas 3; default min replicas 1.
 - No secrets: registry pull uses a user-assigned managed identity, ACR admin user disabled.
 - Default region `southeastasia`, default resource group `rg-vihate`, default `namePrefix` `vihate`.
@@ -37,7 +37,7 @@
 - Create: `.dockerignore`
 
 **Interfaces:**
-- Produces: an image serving Gradio on `0.0.0.0:7860`, with the build arg `MODEL_ID` (default `bvuong/visoBert-ensemble`). Task 3 (`az acr build ... --build-arg MODEL_ID=...`) and Task 4 (README) rely on the arg name `MODEL_ID`.
+- Produces: an image serving Gradio on `0.0.0.0:7860`, with the build arg `MODEL_ID` (default `bvuong/nlp-vihate`). Task 3 (`az acr build ... --build-arg MODEL_ID=...`) and Task 4 (README) rely on the arg name `MODEL_ID`.
 
 - [ ] **Step 1: Pin the uv version used in the image**
 
@@ -86,14 +86,14 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Load the model through the app's own loader so the cache holds exactly what runtime reads.
-ARG MODEL_ID=bvuong/visoBert-ensemble
+ARG MODEL_ID=bvuong/nlp-vihate
 ENV HF_HOME=/opt/hf
 COPY model.py ./
 RUN MODEL_ID="$MODEL_ID" .venv/bin/python -c "from model import Classifier; Classifier()"
 
 # ---- runtime: no build tooling, no network needed ----
 FROM python:3.12-slim
-ARG MODEL_ID=bvuong/visoBert-ensemble
+ARG MODEL_ID=bvuong/nlp-vihate
 ENV MODEL_ID=$MODEL_ID \
     HF_HOME=/opt/hf \
     HF_HUB_OFFLINE=1 \
@@ -336,7 +336,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: from `infra/main.bicep`, parameters `location`, `namePrefix`, `imageTag`, `minReplicas`, outputs `registryName` and `appUrl`; from the `Dockerfile`, build arg `MODEL_ID`. The image repository name equals `namePrefix`.
-- Produces: env-var interface `RESOURCE_GROUP` (default `rg-vihate`), `LOCATION` (default `southeastasia`), `NAME_PREFIX` (default `vihate`), `MIN_REPLICAS` (default `1`), `MODEL_ID` (default `bvuong/visoBert-ensemble`), `IMAGE_TAG` (default UTC timestamp). Task 4 documents these exact names.
+- Produces: env-var interface `RESOURCE_GROUP` (default `rg-vihate`), `LOCATION` (default `southeastasia`), `NAME_PREFIX` (default `vihate`), `MIN_REPLICAS` (default `1`), `MODEL_ID` (default `bvuong/nlp-vihate`), `IMAGE_TAG` (default UTC timestamp). Task 4 documents these exact names.
 
 - [ ] **Step 1: Write `infra/deploy.sh`**
 
@@ -350,7 +350,7 @@ RESOURCE_GROUP="${RESOURCE_GROUP:-rg-vihate}"
 LOCATION="${LOCATION:-southeastasia}"
 NAME_PREFIX="${NAME_PREFIX:-vihate}"
 MIN_REPLICAS="${MIN_REPLICAS:-1}"
-MODEL_ID="${MODEL_ID:-bvuong/visoBert-ensemble}"
+MODEL_ID="${MODEL_ID:-bvuong/nlp-vihate}"
 IMAGE_TAG="${IMAGE_TAG:-$(date -u +%Y%m%d%H%M%S)}"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -465,7 +465,7 @@ Re-running the script builds a new image tag and rolls out a new revision. Setti
 | `LOCATION` | `southeastasia` | Azure region |
 | `NAME_PREFIX` | `vihate` | Prefix for resource names and the image repository |
 | `MIN_REPLICAS` | `1` | `0` scales to zero and saves money, but the first request after idle waits for the model to load |
-| `MODEL_ID` | `bvuong/visoBert-ensemble` | Checkpoint baked into the image |
+| `MODEL_ID` | `bvuong/nlp-vihate` | Checkpoint baked into the image |
 | `IMAGE_TAG` | UTC timestamp | Tag for this build |
 
 The app runs with 2 vCPU / 4 GiB (a smaller size runs out of memory loading the model) and scales

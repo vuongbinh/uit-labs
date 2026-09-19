@@ -54,7 +54,7 @@ def test_empty_model_id_falls_back_to_default(monkeypatch: pytest.MonkeyPatch) -
 
 
 def test_default_model_id_is_the_published_repo() -> None:
-    assert DEFAULT_MODEL_ID == "bvuong/visoBert-ensemble"
+    assert DEFAULT_MODEL_ID == "bvuong/nlp-vihate"
 
 
 def test_wrong_head_size_is_rejected(tmp_path: Path) -> None:

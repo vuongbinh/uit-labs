@@ -12,14 +12,14 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Load the model through the app's own loader so the cache holds exactly what runtime reads.
-ARG MODEL_ID=bvuong/visoBert-ensemble
+ARG MODEL_ID=bvuong/nlp-vihate
 ENV HF_HOME=/opt/hf
 COPY model.py ./
 RUN MODEL_ID="$MODEL_ID" .venv/bin/python -c "from model import Classifier; Classifier()"
 
 # ---- runtime: no build tooling, no network needed ----
 FROM python:3.12-slim
-ARG MODEL_ID=bvuong/visoBert-ensemble
+ARG MODEL_ID=bvuong/nlp-vihate
 ENV MODEL_ID=$MODEL_ID \
     HF_HOME=/opt/hf \
     HF_HUB_OFFLINE=1 \

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Make the Gradio demo (`bvuong/visoBert-ensemble`) deployable to Azure Container Apps with one
+Make the Gradio demo (`bvuong/nlp-vihate`) deployable to Azure Container Apps with one
 repeatable command, using Bicep for infrastructure and an `az` CLI script for orchestration.
 The Hugging Face Space deployment keeps working unchanged.
 
@@ -33,7 +33,7 @@ Multi-stage build.
   CPU index already configured in `pyproject.toml`.
 - Downloads the model and tokenizer into `HF_HOME=/opt/hf` by calling the app's own loader
   (`model.Classifier`), so the cached files are exactly what runtime loads. The model id comes
-  from a build arg defaulting to `bvuong/visoBert-ensemble`.
+  from a build arg defaulting to `bvuong/nlp-vihate`.
 
 **Runtime** (`python:3.12-slim`):
 
