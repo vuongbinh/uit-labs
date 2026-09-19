@@ -220,3 +220,7 @@ __marimo__/
 # vihate experiment artifacts and agent tooling
 outputs/
 .omc/
+
+# Generated at deploy time for the Hugging Face Space (see README)
+requirements.txt
+.gradio/

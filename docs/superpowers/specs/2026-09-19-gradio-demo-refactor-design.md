@@ -15,13 +15,17 @@ Hugging Face Hub, easy to read, easy to extend, and deployable as a Gradio Space
 
 ## Layout
 ```
-app.py            Gradio UI only: two tabs, wires buttons to model.py
-model.py          load model once; predict(texts) -> list[dict[label, prob]]
-pyproject.toml    runtime deps (gradio, torch, transformers<5, sentencepiece, pandas) + dev extra
+app.py            entrypoint: loads the model, exposes `demo` (5 lines)
+ui.py             Gradio layout + handlers; takes a classifier, so tests pass a stub
+model.py          load model; Classifier.predict(texts) -> list[dict[label, prob]]
+batch.py          parse uploaded files, build result tables (no torch/Gradio)
+pyproject.toml    runtime deps + dev group; CPU-only torch index
 uv.lock
-README.md         HF Space front matter (sdk gradio, pinned sdk_version, python_version 3.12) + short description
-tests/            pure-function tests; no real model required
+README.md         HF Space front matter + run/deploy instructions
+tests/            no real model downloads
 ```
+
+`app.py` is split from `ui.py` because `gradio app.py` needs a module-level `demo`, which loads the model at import; keeping the UI in `ui.py` lets tests import it without loading a model.
 
 ## model.py
 - `MODEL_ID = os.environ.get("MODEL_ID", "bvuong/nlp-vihate")`; a local path also works
@@ -46,9 +50,12 @@ tests/            pure-function tests; no real model required
 
 ## Deployment
 - README front matter: `sdk: gradio`, `sdk_version` pinned to the tested Gradio version,
-  `python_version: 3.12`, `app_file: app.py`.
-- Deploy step: `uv export --no-hashes --no-dev -o requirements.txt`, then push to the Space.
+  `python_version: "3.12"`, `app_file: app.py`.
+- Deploy step: `{ echo "--extra-index-url https://download.pytorch.org/whl/cpu"; uv export --no-hashes --no-dev --no-emit-project; } > requirements.txt`, then push to the Space.
+  The `--extra-index-url` line points pip at the PyTorch CPU wheel index, because `uv export` omits the explicit index.
   Documented in the README; `requirements.txt` gitignored.
+  The Space is a separate git repo: `requirements.txt` is copied into a clone of it
+  (with the app files) and pushed from there, never from this repo.
 - Public model: no token needed. First start downloads weights, then cached.
 
 ## Removals
@@ -59,6 +66,6 @@ untracked `src/wecode/` untouched. Everything deleted remains in git history.
 ## Testing
 - Unit tests for file parsing (txt/csv/tsv, column choice, row cap, empty file) and result
   formatting, using a stub predictor.
-- One opt-in test that loads the real model (marked slow, skipped by default).
+- Real-model check is a manual smoke run (`Classifier()` against the Hub repo, then both tabs over HTTP) rather than a test, so the suite stays offline.
 - Manual check: run `uv run app.py` with the real model and exercise both tabs before
   calling it done. The Space build itself cannot be verified without pushing.

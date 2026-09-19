@@ -1,108 +1,57 @@
 [project]
-name = "vihate"
-version = "0.1.0"
-description = "Vietnamese hate-speech training and cross-validation pipeline."
+name = "vihate-demo"
+version = "0.2.0"
+description = "Gradio demo for Vietnamese hate-speech detection (bvuong/nlp-vihate)."
 requires-python = ">=3.12"
 dependencies = [
-  "accelerate>=1.0",
-  "datasets>=3.0",
-  "numpy>=2.0",
-  "rich>=13.7",
-  "scikit-learn>=1.5",
+  "gradio>=5.50,<6",
+  "pandas>=2.2",
   "sentencepiece>=0.2",
   "torch>=2.4",
   "transformers>=4.44,<5",
-  "typer>=0.12",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "basedpyright>=1.20",
   "pytest>=8.3",
   "ruff>=0.6",
 ]
-# Optional: 8-bit AdamW (`--optim adamw_bnb_8bit`) for fine-tuning larger
-# backbones (e.g. xlm-roberta-base) on memory-constrained GPUs.
-bnb = [
-  "bitsandbytes>=0.43; platform_system == 'Linux'",
-]
-# Optional: run the pipeline as a notebook instead of through the CLI
-# (`notebooks/vihate_project_run.ipynb`). `nbconvert` drives headless
-# execution; `pandas`/`matplotlib` only render tables and confusion-matrix
-# heatmaps, so the metrics themselves stay identical to the CLI's.
-notebook = [
-  "ipykernel>=6.29",
-  # Silences tqdm's "IProgress not found" warning and renders training progress
-  # bars during transformer folds.
-  "ipywidgets>=8.1",
-  "jupyterlab>=4.2",
-  "matplotlib>=3.9",
-  "nbconvert>=7.16",
-  "pandas>=2.2",
-]
-# Optional: serve the persisted demo bundle (`vihate demo`) or publish it to the
-# Hub and a Gradio Space (`vihate publish-model` / `vihate publish-space`). Kept
-# separate from `notebook` because a training run needs neither, and a demo host
-# needs neither jupyterlab nor matplotlib. torch/transformers come from the main
-# dependencies; pandas is repeated here so `--extra demo` alone is enough.
-demo = [
-  "gradio>=5.50,<6",
-  "huggingface-hub>=0.36",
-  "pandas>=2.2",
-]
 
-[project.scripts]
-vihate = "vihate.cli:app"
+[tool.uv]
+# Not a distributable package: the root modules are the app.
+package = false
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+# CPU-only torch keeps the Space build small (the default Linux wheel drags in
+# several GB of CUDA libraries).
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/vihate"]
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-# This pyproject.toml also covers unrelated pre-existing lab/homework content
-# (cyber_bullying/, data/) at the repo root; scope linting to the vihate
-# package itself, matching basedpyright's `include` below.
-# `notebooks/` is excluded for the same reason `cyber_bullying/` is: ruff lints
-# .ipynb cells, and library-oriented rules (T201 `print`, ANN, D) contradict
-# notebook idiom, where printing progress and displaying tables *is* the output.
-extend-exclude = ["cyber_bullying", "data", "notebooks"]
+# The repo root also holds unrelated lab/homework content.
+extend-exclude = ["cyber_bullying", "data", "docs", "notebooks", "src"]
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = [
-  "COM812",
-  "D203",
-  "D213",
-  # No copyright-header convention in this repo.
-  "CPY001",
-  # Heavy ML deps (torch, transformers, sklearn, datasets) are imported lazily
-  # inside functions so `vihate --help` and syntax checks stay fast and work
-  # even before `uv sync` installs them; see README_vihsd.md.
-  "PLC0415",
-]
+ignore = ["COM812", "D203", "D213", "CPY001"]
 
 [tool.ruff.lint.per-file-ignores]
-# S106 matches any argument whose name merely contains "token". The demo fixtures pass
-# tokenizer special tokens (`unk_token=`, `pad_token=`, ...) and the publish tests pass
-# a stubbed Hugging Face write token to a fake API; neither is a real credential.
-"tests/**/*.py" = ["D", "INP001", "PLR2004", "S101", "S106"]
-# Typer commands legitimately expose one option per CLI flag, including
-# boolean `--flag/--no-flag` options.
-"src/vihate/cli.py" = ["FBT001", "FBT002", "PLR0913", "PLR0917"]
+# PLC0415: heavy imports stay inside fixtures/helpers. S106: the *_token= args are tokenizer special tokens, not credentials.
+"tests/**/*.py" = ["D", "INP001", "PLC0415", "PLR2004", "S101", "S106"]
 
 [tool.basedpyright]
-include = ["src", "tests"]
+include = ["app.py", "ui.py", "model.py", "batch.py", "tests"]
 pythonVersion = "3.12"
-# "all" is impractical here: sklearn, datasets, and transformers ship without
-# type stubs, so exhaustive strictness mostly flags third-party `Unknown`
-# types rather than real bugs in this package's code.
 typeCheckingMode = "standard"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "-q"
