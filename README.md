@@ -21,7 +21,6 @@ Vietnamese text as `CLEAN`, `OFFENSIVE` or `HATE`, one comment at a time or from
 ```bash
 uv sync
 uv run app.py                       # plain launch, http://127.0.0.1:7860
-uv run gradio app.py                # hot-reloading dev server
 MODEL_ID=path/or/repo uv run app.py # serve a different checkpoint
 uv run pytest                       # tests (no downloads)
 ```

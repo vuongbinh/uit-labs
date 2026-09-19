@@ -1,6 +1,6 @@
 """Entrypoint for the ViHate demo: `uv run app.py` locally, or a Hugging Face Space.
 
-`demo` is exposed at module level so `uv run gradio app.py` (hot reload) works too.
+`demo` is exposed at module level. Hot reload via `gradio app.py` is not supported here.
 Set MODEL_ID to a Hub repo id or local path to serve a different checkpoint.
 """
 
