@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from batch import MAX_ROWS
-from ui import analyze_file, analyze_text, build_demo
+from ui import analyze_file, analyze_text, build_layout
 
 
 class StubClassifier:
@@ -77,5 +77,9 @@ def test_analyze_file_bad_file_raises_gradio_error(stub: StubClassifier, tmp_pat
     assert stub.calls == []
 
 
-def test_build_demo_returns_blocks(stub: StubClassifier) -> None:
-    assert isinstance(build_demo(stub), gr.Blocks)
+def test_build_layout_renders_both_tabs(stub: StubClassifier) -> None:
+    with gr.Blocks() as demo:
+        build_layout(stub)
+    components = list(demo.blocks.values())
+    assert any(isinstance(block, gr.Label) for block in components)  # single tab
+    assert any(isinstance(block, gr.Dataframe) for block in components)  # batch tab

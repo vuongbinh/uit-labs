@@ -70,39 +70,37 @@ def analyze_file(classifier: Predictor, path: str | None) -> tuple[pd.DataFrame,
     return table, str(csv_path), note
 
 
-def build_demo(classifier: Predictor) -> gr.Blocks:
-    """Assemble the two-tab app around an already-loaded classifier."""
-    with gr.Blocks(title=TITLE) as demo:
-        gr.Markdown(DESCRIPTION)
+def build_layout(classifier: Predictor) -> None:
+    """Render the two-tab app into the enclosing `gr.Blocks` around a loaded classifier."""
+    gr.Markdown(DESCRIPTION)
 
-        with gr.Tab("Single comment"):
-            text_input = gr.Textbox(
-                label="Vietnamese text", placeholder="Nhập nội dung cần kiểm tra...", lines=5
-            )
-            analyze_button = gr.Button("Analyze", variant="primary")
-            predicted = gr.Textbox(label="Predicted class")
-            probabilities = gr.Label(label="Class probabilities", num_top_classes=len(LABELS))
-            gr.Examples(examples=EXAMPLES, inputs=text_input)
-            analyze_button.click(
-                lambda text: analyze_text(classifier, text),
-                inputs=text_input,
-                outputs=[predicted, probabilities],
-            )
+    with gr.Tab("Single comment"):
+        text_input = gr.Textbox(
+            label="Vietnamese text", placeholder="Nhập nội dung cần kiểm tra...", lines=5
+        )
+        analyze_button = gr.Button("Analyze", variant="primary")
+        predicted = gr.Textbox(label="Predicted class")
+        probabilities = gr.Label(label="Class probabilities", num_top_classes=len(LABELS))
+        gr.Examples(examples=EXAMPLES, inputs=text_input)
+        analyze_button.click(
+            lambda text: analyze_text(classifier, text),
+            inputs=text_input,
+            outputs=[predicted, probabilities],
+        )
 
-        with gr.Tab("Batch file"):
-            gr.Markdown(
-                "Upload a `.txt` file (one comment per line) or a `.csv`/`.tsv` file with a "
-                "`free_text`, `text` or `comment` column. "
-                f"At most {MAX_ROWS} comments are analyzed. Files up to 10 MB."
-            )
-            file_input = gr.File(label="Comments file", file_types=[".txt", ".csv", ".tsv"])
-            batch_button = gr.Button("Analyze file", variant="primary")
-            status = gr.Markdown()
-            table = gr.Dataframe(label="Predictions", wrap=True)
-            download = gr.File(label="Download predictions (.csv)")
-            batch_button.click(
-                lambda path: analyze_file(classifier, path),
-                inputs=file_input,
-                outputs=[table, download, status],
-            )
-    return demo
+    with gr.Tab("Batch file"):
+        gr.Markdown(
+            "Upload a `.txt` file (one comment per line) or a `.csv`/`.tsv` file with a "
+            "`free_text`, `text` or `comment` column. "
+            f"At most {MAX_ROWS} comments are analyzed. Files up to 10 MB."
+        )
+        file_input = gr.File(label="Comments file", file_types=[".txt", ".csv", ".tsv"])
+        batch_button = gr.Button("Analyze file", variant="primary")
+        status = gr.Markdown()
+        table = gr.Dataframe(label="Predictions", wrap=True)
+        download = gr.File(label="Download predictions (.csv)")
+        batch_button.click(
+            lambda path: analyze_file(classifier, path),
+            inputs=file_input,
+            outputs=[table, download, status],
+        )
