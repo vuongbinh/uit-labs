@@ -22,24 +22,27 @@ if ! az account show >/dev/null 2>&1; then
   exit 1
 fi
 
+# deploy <output-query> [extra bicep parameters...]: prints the single output value selected by the query.
 deploy() {
+  local query="$1"
+  shift
   az deployment group create \
     --resource-group "$RESOURCE_GROUP" \
     --template-file "$template" \
     --parameters namePrefix="$NAME_PREFIX" minReplicas="$MIN_REPLICAS" location="$LOCATION" "$@" \
-    --query "properties.outputs" --output json
+    --query "$query" --output tsv
 }
 
 echo "==> Registering resource providers (no-op if already registered)"
-az provider register --namespace Microsoft.App --wait
-az provider register --namespace Microsoft.OperationalInsights --wait
-az provider register --namespace Microsoft.ContainerRegistry --wait
+for ns in Microsoft.App Microsoft.OperationalInsights Microsoft.ContainerRegistry Microsoft.ManagedIdentity; do
+  az provider register --namespace "$ns" --wait || echo "warning: could not register $ns (ARM will auto-register it during deployment)" >&2
+done
 
 echo "==> Resource group $RESOURCE_GROUP ($LOCATION)"
 az group create --name "$RESOURCE_GROUP" --location "$LOCATION" --output none
 
 echo "==> Shared infrastructure (registry, identity, environment)"
-registry="$(deploy | python3 -c 'import json,sys; print(json.load(sys.stdin)["registryName"]["value"])')"
+registry="$(deploy "properties.outputs.registryName.value")"
 
 echo "==> Building image $NAME_PREFIX:$IMAGE_TAG in $registry"
 az acr build \
@@ -49,7 +52,7 @@ az acr build \
   "$repo_root"
 
 echo "==> Deploying the app"
-fqdn="$(deploy imageTag="$IMAGE_TAG" | python3 -c 'import json,sys; print(json.load(sys.stdin)["appUrl"]["value"])')"
+fqdn="$(deploy "properties.outputs.appUrl.value" imageTag="$IMAGE_TAG")"
 
 echo
 echo "Deployed: https://$fqdn"

@@ -95,6 +95,8 @@ tradeoff noted), rebuilding for a different model, and tear-down via `az group d
   if available.
 - Existing `pytest` and `ruff check` still pass.
 
+None of the checks above has been run yet: the authoring environment had no Docker daemon, `az` or `bicep`. The first real build and `infra/deploy.sh` run is the acceptance test.
+
 Not verifiable here: an actual Azure deployment (no `az` CLI or subscription in this
 environment). The first real run is the acceptance test.
 

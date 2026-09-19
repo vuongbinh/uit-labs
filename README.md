@@ -70,7 +70,7 @@ an Azure subscription; no local Docker is needed because the image is built in t
 
 ```bash
 az login
-infra/deploy.sh          # prints https://<app>.<region>.azurecontainerapps.io when done
+infra/deploy.sh          # prints https://<app>.<environment-id>.<region>.azurecontainerapps.io when done
 ```
 
 Re-running the script builds a new image tag and rolls out a new revision. Settings are env vars:
@@ -90,4 +90,6 @@ time; to serve another checkpoint, re-run the script with a different `MODEL_ID`
 
 To try the image locally: `docker build -t vihate-demo . && docker run --rm -p 7860:7860 vihate-demo`.
 
-To delete everything: `az group delete --name rg-vihate`.
+Every deploy pushes a new ~2-3 GB image tag and the Basic registry keeps them all, so delete old tags with `az acr repository delete --name <registry> --image vihate:<tag>` when storage matters.
+
+To delete everything: `az group delete --name "${RESOURCE_GROUP:-rg-vihate}"`.

@@ -1,7 +1,7 @@
 targetScope = 'resourceGroup'
 
 @description('Azure region for all resources.')
-param location string = resourceGroup().location
+param location string = 'southeastasia'
 
 @description('Prefix for resource names and the image repository. Lowercase letters and digits only.')
 @minLength(3)
@@ -105,13 +105,15 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = if (!empty(imageTag)) {
               type: 'Startup'
               httpGet: { path: '/', port: appPort }
               initialDelaySeconds: 10
-              periodSeconds: 10
+              periodSeconds: 20
+              timeoutSeconds: 5
               failureThreshold: 10
             }
             {
               type: 'Liveness'
               httpGet: { path: '/', port: appPort }
               periodSeconds: 30
+              timeoutSeconds: 5
               failureThreshold: 3
             }
           ]
